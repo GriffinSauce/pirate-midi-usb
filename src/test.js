@@ -16,5 +16,3 @@ console.log("bridge6", bridge6.deviceInfo);
 
 // Commands are bound to simple functions and return a promise
 const globalSettings = await bridge6.getGlobalSettings();
-
-await bridge6.goToBank(1);

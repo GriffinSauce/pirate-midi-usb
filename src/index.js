@@ -16,9 +16,9 @@ const MANUFACTURER = "Pirate MIDI";
 const DELIMITER = "~";
 
 /**
- * Commands receiving JSON structured data
+ * Command timeout
  */
-const COMMANDS_RECEIVING_DATA = ["CHCK", "DREQ"];
+const TIMEOUT_MS = 5000;
 
 class PirateMidiDevice {
   // Serial port for sending/receiving data
@@ -43,17 +43,18 @@ class PirateMidiDevice {
    * Every command should have a unique id, keep a private incrementing counter
    */
   #getCommandId = () => {
-    return (this.#commandIndex += 0);
+    return (this.#commandIndex += 1);
   };
 
   /**
    * Sends a command to the device and returns a promise
    * When a command returns data the promise value will contain parsed data, otherwise no value
    * @param {String} command - a command like CHCK
-   * @param  {...String} args - any arguments for the command
+   * @param {Boolean} parseResponse - whether JSON formatted data is expected as response
+   * @param  {...String} args - any arguments for the command, optional
    * @returns
    */
-  #runCommand = (command, ...args) => {
+  #runCommand = (command, parseResponse = false, ...args) => {
     // TODO: validate input
     const commandId = this.#getCommandId();
     const formattedCommand = `${[commandId, command, ...args].join(",")}~`;
@@ -62,7 +63,7 @@ class PirateMidiDevice {
       const timeout = setTimeout(() => {
         console.error(`Timeout executing "${formattedCommand}"`); // TODO: use debug
         _reject(`command timed out`);
-      }, 1000);
+      }, TIMEOUT_MS);
 
       const cleanup = () => {
         clearTimeout(timeout);
@@ -84,15 +85,16 @@ class PirateMidiDevice {
 
       const handleResponse = (rawData) => {
         // TODO: data format validation
-        const [_, idString, data] = rawData.match(/^(\d+),(.*)/);
+        const matches = rawData.trim().match(/^(\d+),([\S\s]*)/);
+        if (!matches) reject("error parsing response");
+
+        const [_, idString, data] = matches;
 
         const id = parseInt(idString);
 
         if (id !== commandId) return;
 
-        const expectsData = COMMANDS_RECEIVING_DATA.includes(command);
-        if (expectsData) {
-          // TODO: bug?
+        if (parseResponse) {
           if (data === "ok") return reject("no data received");
 
           const parsed = data;
@@ -104,9 +106,7 @@ class PirateMidiDevice {
           }
         }
 
-        if (data === "ok") return resolve();
-
-        return reject(data);
+        return data === "ok" ? resolve(data) : reject(data);
       };
 
       this.#parser.on("data", handleResponse);
@@ -116,35 +116,39 @@ class PirateMidiDevice {
   };
 
   updateDeviceInfo = async () => {
-    this.deviceInfo = await this.#runCommand("CHCK");
+    this.deviceInfo = await this.#runCommand("CHCK", true);
   };
 
-  getGlobalSettings = () => this.#runCommand("DREQ", `globalSettings`);
+  getGlobalSettings = async () => {
+    await this.#runCommand("DREQ");
+    return this.#runCommand(`globalSettings`, true);
+  };
 
-  getBankSettings = (bank) => {
+  getBankSettings = async (bank) => {
     // TODO: validate input
-    return this.#runCommand("DREQ", "bankSettings", bank);
+    await this.#runCommand("DREQ");
+    return this.#runCommand(`bankSettings`, true, bank);
   };
 
-  bankUp = () => this.#runCommand("CTRL", "bankUp");
+  // bankUp = () => this.#runCommand("CTRL", "bankUp");
 
-  bankDown = () => this.#runCommand("CTRL", "bankDown");
+  // bankDown = () => this.#runCommand("CTRL", "bankDown");
 
-  goToBank = (bank) => {
-    // TODO: validate input
-    return this.#runCommand("CTRL", "goToBank", bank);
-  };
+  // goToBank = (bank) => {
+  //   // TODO: validate input
+  //   return this.#runCommand("CTRL", "goToBank", bank);
+  // };
 
-  toggleFootswitch = (footswitch) => {
-    // TODO: validate input
-    return this.#runCommand("CTRL", "toggleFootswitch", footswitch);
-  };
+  // toggleFootswitch = (footswitch) => {
+  //   // TODO: validate input
+  //   return this.#runCommand("CTRL", "toggleFootswitch", footswitch);
+  // };
 
-  deviceRestart = () => this.#runCommand("CTRL", "deviceRestart");
+  // deviceRestart = () => this.#runCommand("CTRL", "deviceRestart");
 
-  enterBootloader = () => this.#runCommand("CTRL", "enterBootloader");
+  // enterBootloader = () => this.#runCommand("CTRL", "enterBootloader");
 
-  factoryReset = () => this.#runCommand("CTRL", "factoryReset");
+  // factoryReset = () => this.#runCommand("CTRL", "factoryReset");
 }
 
 /**
