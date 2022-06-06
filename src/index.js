@@ -33,8 +33,8 @@ class PirateMidiDevice {
   deviceInfo = null;
 
   constructor(serialPortPath) {
-    this.port = new SerialPort({ path: serialPortPath, baudRate: 9600 });
-    this.parser = this.port.pipe(
+    this.#port = new SerialPort({ path: serialPortPath, baudRate: 9600 });
+    this.#parser = this.#port.pipe(
       new RegexParser({ regex: new RegExp(DELIMITER) })
     );
   }
@@ -55,20 +55,37 @@ class PirateMidiDevice {
    */
   #runCommand = (command, ...args) => {
     // TODO: validate input
+    const commandId = this.#getCommandId();
+    const formattedCommand = `${[commandId, command, ...args].join(",")}~`;
 
-    return new Promise((resolve, reject) => {
-      const commandId = this.#getCommandId();
-      const formattedCommand = `${[commandId, command, ...args].join(",")}~`;
+    return new Promise((_resolve, _reject) => {
+      const timeout = setTimeout(() => {
+        console.error(`Timeout executing "${formattedCommand}"`); // TODO: use debug
+        _reject(`command timed out`);
+      }, 1000);
 
-      const rejectWithError = (error) => {
-        console.error(`Error executing "${formattedCommand}" - ${error}`); // TODO: use debug
-        reject(error);
+      const cleanup = () => {
+        clearTimeout(timeout);
+        this.#parser.off("data", handleResponse);
       };
 
-      // TODO: add timeout to reject
-      // TODO: remove listener or figure out a different structure to avoid attaching on the fly
-      this.parser.on("data", (rawData) => {
+      // Wrap resolve with cleanup
+      const resolve = (returnValue) => {
+        cleanup();
+        _resolve(returnValue);
+      };
+
+      // Wrap reject with cleanup and error debug
+      const reject = (error) => {
+        console.error(`Error executing "${formattedCommand}" - ${error}`); // TODO: use debug
+        cleanup();
+        _reject(error);
+      };
+
+      const handleResponse = (rawData) => {
+        // TODO: data format validation
         const [_, idString, data] = rawData.match(/^(\d+),(.*)/);
+
         const id = parseInt(idString);
 
         if (id !== commandId) return;
@@ -76,23 +93,25 @@ class PirateMidiDevice {
         const expectsData = COMMANDS_RECEIVING_DATA.includes(command);
         if (expectsData) {
           // TODO: bug?
-          if (data === "ok") return rejectWithError("no data received");
+          if (data === "ok") return reject("no data received");
 
           const parsed = data;
           try {
             const parsed = JSON.parse(data);
             return resolve(parsed);
           } catch (error) {
-            return rejectWithError(data); // Could be malformed JSON but most likely an error
+            return reject(data); // Could be malformed JSON but most likely an error
           }
         }
 
         if (data === "ok") return resolve();
 
-        return rejectWithError(data);
-      });
+        return reject(data);
+      };
 
-      this.port.write(formattedCommand);
+      this.#parser.on("data", handleResponse);
+
+      this.#port.write(formattedCommand);
     });
   };
 
@@ -142,6 +161,7 @@ export const getDevices = async () => {
       .map(async (portInfo) => {
         const device = new PirateMidiDevice(portInfo.path);
 
+        // Populate deviceInfo immediately to reduce friction
         // TODO: error handling
         await device.updateDeviceInfo();
 
