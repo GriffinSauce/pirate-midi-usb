@@ -1,0 +1,16 @@
+{
+  "name": "pirate-midi-usb",
+  "version": "0.0.1",
+  "main": "src/index.js",
+  "type": "module",
+  "author": "Joris Griffioen <jorisjgriffioen@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "dev": "nodemon src/test.js"
+  },
+  "dependencies": {
+    "nodemon": "^2.0.16",
+    "serialport": "^10.4.0",
+    "usb": "^2.4.2"
+  }
+}
