@@ -32,6 +32,8 @@ await device[0].goToBank(2);
 
 Returns an array of Pirate Midi devices to interact with.
 
+Check [PirateMidiDevice.ts](src/PirateMidiDevice.ts) to see which functions are implemented.
+
 ## Thanks
 
 This repo was started with [typescript-npm-package-template](https://github.com/ryansonshine/typescript-npm-package-template)
