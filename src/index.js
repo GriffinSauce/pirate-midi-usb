@@ -114,11 +114,15 @@ class PirateMidiDevice {
     const commandId = this.#getCommandId();
 
     let data = await this.#sendRecieve(commandId, command);
+
+    // When a command has arguments they are sent as a second message
     if (args.length) {
       if (data !== "ok") throw new Error(commandResponse);
-      data = await this.#sendRecieve(commandId, args.join(","));
+      const dataCommandId = this.#getCommandId();
+      data = await this.#sendRecieve(dataCommandId, args.join(","));
     }
 
+    // Some commands receive JSON either directly or in response to the second data message
     const parseResponse = COMMANDS_RECEIVING_DATA.includes(command);
     if (parseResponse) {
       if (data === "ok") return reject("no data received");
@@ -163,7 +167,8 @@ class PirateMidiDevice {
 
   enterBootloader = () => this.#runCommand("CTRL", "enterBootloader");
 
-  factoryReset = () => this.#runCommand("CTRL", "factoryReset");
+  // Disabled for safety because there might not be a confirmation
+  // factoryReset = () => this.#runCommand("CTRL", "factoryReset");
 }
 
 /**
