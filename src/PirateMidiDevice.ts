@@ -1,4 +1,4 @@
-import { Command, DeviceInfo } from './types';
+import { BankSettings, Command, DeviceInfo, GlobalSettings } from './types';
 import { BaseDevice } from './BaseDevice';
 
 export class PirateMidiDevice extends BaseDevice {
@@ -8,17 +8,24 @@ export class PirateMidiDevice extends BaseDevice {
     super(serialPortPath);
   }
 
-  async updateDeviceInfo() {
-    this.deviceInfo = (await this.runCommand(Command.Check)) as DeviceInfo;
+  /**
+   * Retrieve device information from the device, save it on the instance AND return it.
+   * @returns {DeviceInfo} - device information like the model and firmware version
+   */
+  async updateDeviceInfo(): Promise<DeviceInfo> {
+    this.deviceInfo = await this.runCommand<DeviceInfo>(Command.Check);
+    return this.deviceInfo;
   }
 
-  getGlobalSettings() {
-    return this.runCommand(Command.DataRequest, { args: ['globalSettings'] });
+  getGlobalSettings(): Promise<GlobalSettings> {
+    return this.runCommand<GlobalSettings>(Command.DataRequest, {
+      args: ['globalSettings'],
+    });
   }
 
-  getBankSettings(bank: number) {
+  getBankSettings(bank: number): Promise<BankSettings> {
     // TODO: validate input
-    return this.runCommand(Command.DataRequest, {
+    return this.runCommand<BankSettings>(Command.DataRequest, {
       args: ['bankSettings', String(bank)],
     });
   }
@@ -26,14 +33,14 @@ export class PirateMidiDevice extends BaseDevice {
   /**
    * @param profileId - 32-bit hex configuration profile ID
    */
-  setProfileId(profileId: string) {
+  setProfileId(profileId: string): Promise<string> {
     // TODO: validate input
     return this.runCommand(Command.DataTransmitRequest, {
       args: ['profileId', profileId],
     });
   }
 
-  setGlobalSettings(globalSettings: Record<string, unknown>) {
+  setGlobalSettings(globalSettings: Record<string, unknown>): Promise<string> {
     // TODO: validate input
     return this.runCommand(Command.DataTransmitRequest, {
       args: ['globalSettings'],
@@ -41,7 +48,10 @@ export class PirateMidiDevice extends BaseDevice {
     });
   }
 
-  setBankSettings(bank: number, bankSettings: Record<string, unknown>) {
+  setBankSettings(
+    bank: number,
+    bankSettings: Record<string, unknown>
+  ): Promise<string> {
     // TODO: validate input
     return this.runCommand(Command.DataTransmitRequest, {
       args: ['bankSettings', String(bank)],
@@ -49,38 +59,38 @@ export class PirateMidiDevice extends BaseDevice {
     });
   }
 
-  bankUp() {
+  bankUp(): Promise<string> {
     return this.runCommand(Command.Control, { args: ['bankUp'] });
   }
 
-  bankDown() {
+  bankDown(): Promise<string> {
     return this.runCommand(Command.Control, { args: ['bankDown'] });
   }
 
-  goToBank(bank: number) {
+  goToBank(bank: number): Promise<string> {
     // TODO: validate input
     return this.runCommand(Command.Control, {
       args: ['goToBank', String(bank)],
     });
   }
 
-  toggleFootswitch(footswitch: number) {
+  toggleFootswitch(footswitch: number): Promise<string> {
     // TODO: validate input
     return this.runCommand(Command.Control, {
       args: ['toggleFootswitch', String(footswitch)],
     });
   }
 
-  deviceRestart() {
+  deviceRestart(): Promise<string> {
     return this.runCommand(Command.Control, { args: ['deviceRestart'] });
   }
 
-  enterBootloader() {
+  enterBootloader(): Promise<string> {
     return this.runCommand(Command.Control, { args: ['enterBootloader'] });
   }
 
   // Disabled for safety because there might not be a confirmation
-  // factoryReset() {
+  // factoryReset(): Promise<string> {
   //   return this.runCommand(Command.Control, { args: ['factoryReset'] });
   // }
 }

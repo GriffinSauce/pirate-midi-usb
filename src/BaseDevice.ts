@@ -21,6 +21,11 @@ const COMMANDS_RECEIVING_DATA = [Command.Check, Command.DataRequest];
  */
 const MESSAGE_PARSE_REGEX = /^(\d+),([\S\s]*)/; // TODO: Consider using named groups: /^(?<commandId>\d+),(?<data>[\S\s]*)/
 
+// type ResponseDataOrString<Response extends string | Record<string, unknown>> =
+//   Response extends string ? string : Response;
+
+type CommandOptions = { args?: string[]; data?: string };
+
 /**
  * Encapsulates the serial protocol, exposing only a simple runCommand method
  */
@@ -107,15 +112,29 @@ export class BaseDevice {
   /**
    * Send a command, optionally with arguments and return response data (if any)
    * @param {Command} command - a command string like CHCK
-   * @param  {} options - any arguments for the command, for data transmit requests add the (stringified) data as the last arg
+   * @param  {CommandOptions} options
    * @param  {String[]} options.args - any arguments for the command
    * @param  {String} options.data - any (stringified) data to transmit (only valid for data transmit commands)
    * @returns
    */
+
+  // Overload without response data
   protected async runCommand(
     command: Command,
-    { args, data }: { args?: string[]; data?: string } = {}
-  ) {
+    options?: CommandOptions | undefined
+  ): Promise<string>;
+
+  // Overload with response data
+  protected async runCommand<ResponseData extends Record<string, unknown>>(
+    command: Command,
+    options?: CommandOptions | undefined
+  ): Promise<ResponseData>;
+
+  protected async runCommand<ResponseData extends Record<string, unknown>>(
+    command: Command,
+    options: CommandOptions = {}
+  ): Promise<string | ResponseData> {
+    const { args, data } = options;
     const commandId = this.#getCommandId();
 
     let response = await this.#sendReceive(commandId, command);
@@ -146,7 +165,7 @@ export class BaseDevice {
       if (response === 'ok') throw new Error('no data received');
       try {
         // TODO: add generic to type output
-        const parsed: unknown = JSON.parse(response);
+        const parsed: ResponseData = JSON.parse(response);
         return parsed;
       } catch (error) {
         throw new Error(response); // Could be malformed JSON but most likely an error

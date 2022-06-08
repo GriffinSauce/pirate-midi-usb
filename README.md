@@ -28,13 +28,44 @@ await device[0].goToBank(2);
 
 ## API
 
-### getDevices()
+This package implements the _Pirate Midi Device API_ to interact with Bridge4 and Bridge6 devices, see the [API documentation](https://github.com/Pirate-MIDI/device-descriptors-api) for the underlying details.
 
-Returns an array of Pirate Midi devices to interact with.
+### Use `getDevices` to retrieve available devices
 
-Check [PirateMidiDevice.ts](src/PirateMidiDevice.ts) to see which functions are implemented.
+Scans USB devices and returns a promise with an array of [PirateMidiDevice](#PirateMidiDevice) instances (one per device) to interact with.
+
+```ts
+import { getDevices } from 'pirate-midi-usb';
+
+const devices = await getDevices();
+
+const bridge6 = device.find(device => device.deviceName === 'Bridge6')
+```
+
+Each instance of a device is returned with the `deviceInfo` prefetched. This information could be used to select a specific device when multiple are connected. When no devices are found an empty array will be returned
+
+### Use `PirateMidiDevice` methods to interact with the device
+
+Check [PirateMidiDevice.ts](src/PirateMidiDevice.ts) to see all implemented methods.
+
+#### Examples
+
+```ts
+// Fetch data from the device
+const globalSettings = await device.getGlobalSettings();
+
+// Send data to the device
+await device.setGlobalSettings({ midiChannel: 2 })
+
+// Control the device
+await device[0].goToBank(2);
+```
+
+The returned promise will reject when there is malformed input or an error with the device.
 
 ## Thanks
+
+Thanks to Pirate Midi for the awesome devices and the openness.
 
 This repo was started with [typescript-npm-package-template](https://github.com/ryansonshine/typescript-npm-package-template)
 

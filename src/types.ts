@@ -6,7 +6,7 @@ export enum Command {
   Reset = 'RSET',
 }
 
-export interface DeviceInfo {
+export interface DeviceInfo extends Record<string, unknown> {
   deviceModel: string;
   firmwareVersion: string;
   hardwareVersion: string;
@@ -14,3 +14,9 @@ export interface DeviceInfo {
   deviceName: string;
   profileId: string;
 }
+
+// TODO
+export type GlobalSettings = Record<string, unknown>;
+
+// TODO
+export type BankSettings = Record<string, unknown>;
