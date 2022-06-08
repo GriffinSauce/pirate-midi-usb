@@ -40,7 +40,7 @@ export class PirateMidiDevice extends BaseDevice {
     });
   }
 
-  setGlobalSettings(globalSettings: Record<string, unknown>): Promise<string> {
+  setGlobalSettings(globalSettings: Partial<GlobalSettings>): Promise<string> {
     // TODO: validate input
     return this.runCommand(Command.DataTransmitRequest, {
       args: ['globalSettings'],
@@ -50,7 +50,7 @@ export class PirateMidiDevice extends BaseDevice {
 
   setBankSettings(
     bank: number,
-    bankSettings: Record<string, unknown>
+    bankSettings: Partial<BankSettings>
   ): Promise<string> {
     // TODO: validate input
     return this.runCommand(Command.DataTransmitRequest, {

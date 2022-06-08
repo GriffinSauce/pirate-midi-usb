@@ -1,6 +1,6 @@
 import { SerialPort } from 'serialport';
 import { RegexParser } from '@serialport/parser-regex';
-import { Command } from './types';
+import { Command, CommandOptions } from './types';
 /**
  * Commands and response streams are delimited with ~
  */
@@ -20,11 +20,6 @@ const COMMANDS_RECEIVING_DATA = [Command.Check, Command.DataRequest];
  * Parse a message to it's components (eg. "0,ok~" => "0" and "ok")
  */
 const MESSAGE_PARSE_REGEX = /^(\d+),([\S\s]*)/; // TODO: Consider using named groups: /^(?<commandId>\d+),(?<data>[\S\s]*)/
-
-// type ResponseDataOrString<Response extends string | Record<string, unknown>> =
-//   Response extends string ? string : Response;
-
-type CommandOptions = { args?: string[]; data?: string };
 
 /**
  * Encapsulates the serial protocol, exposing only a simple runCommand method
@@ -49,7 +44,7 @@ export class BaseDevice {
   /**
    * Every command should have a unique id, keep a private incrementing counter
    */
-  #getCommandId() {
+  #getCommandId(): number {
     return (this.#commandIndex += 1);
   }
 

@@ -19,16 +19,16 @@ void (async () => {
   console.log('device', device.deviceInfo);
 
   // Commands are bound to simple functions and return a promise
-  const globalSettings = await device.getGlobalSettings();
+  const bankSettings = await device.getBankSettings(0);
 
   // Some commands might take arguments & don't return any data
   // Disabled because these commands have issues
   // await device.goToBank(1);
 
   // Send data to the device
-  await device.setGlobalSettings({ midiChannel: 4 });
+  await device.setGlobalSettings({ midiChannel: 0 });
 
   // And read it
-  // @ts-expect-error - return type is not implemented yet
+  const globalSettings = await device.getGlobalSettings();
   console.log('globalSettings.midiChannel', globalSettings.midiChannel);
 })();
