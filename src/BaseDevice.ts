@@ -107,36 +107,52 @@ export class BaseDevice {
   /**
    * Send a command, optionally with arguments and return response data (if any)
    * @param {Command} command - a command string like CHCK
-   * @param  {...String} args - any arguments for the command
+   * @param  {} options - any arguments for the command, for data transmit requests add the (stringified) data as the last arg
+   * @param  {String[]} options.args - any arguments for the command
+   * @param  {String} options.data - any (stringified) data to transmit (only valid for data transmit commands)
    * @returns
    */
-  protected async runCommand(command: Command, ...args: string[]) {
+  protected async runCommand(
+    command: Command,
+    { args, data }: { args?: string[]; data?: string } = {}
+  ) {
     const commandId = this.#getCommandId();
 
-    let data = await this.#sendReceive(commandId, command);
+    let response = await this.#sendReceive(commandId, command);
 
     // When a command has arguments they are sent as a second message
-    if (args.length) {
-      if (data !== 'ok') throw new Error(data);
+    if (args?.length) {
+      if (response !== 'ok') throw new Error(response);
+
+      // Send args
+      const argCommandId = this.#getCommandId();
+      response = await this.#sendReceive(argCommandId, args.join(','));
+    }
+
+    // Data is sent in another subsequent message
+    if (data) {
+      if (command !== Command.DataTransmitRequest)
+        throw new Error(`sending data not supported for command ${command}`);
+
+      if (response !== 'ok') throw new Error(response);
+
       const dataCommandId = this.#getCommandId();
-      data = await this.#sendReceive(dataCommandId, args.join(','));
+      response = await this.#sendReceive(dataCommandId, data);
     }
 
     // Some commands receive JSON either directly or in response to the second data message
     const parseResponse = COMMANDS_RECEIVING_DATA.includes(command);
     if (parseResponse) {
-      if (data === 'ok') throw new Error('no data received');
+      if (response === 'ok') throw new Error('no data received');
       try {
         // TODO: add generic to type output
-        const parsed: unknown = JSON.parse(data);
+        const parsed: unknown = JSON.parse(response);
         return parsed;
       } catch (error) {
-        throw new Error(data); // Could be malformed JSON but most likely an error
+        throw new Error(response); // Could be malformed JSON but most likely an error
       }
     }
 
-    if (data !== 'ok') throw new Error(data);
-
-    return data;
+    return response;
   }
 }
