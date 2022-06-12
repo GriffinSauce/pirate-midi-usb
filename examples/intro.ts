@@ -23,7 +23,7 @@ void (async () => {
   console.log('bankSettings.bankName', bankSettings.bankName);
 
   // Some commands might take arguments & don't return any data
-  await device.goToBank(1);
+  await device.goToBank(0);
 
   // Send data to the device
   await device.setGlobalSettings({ midiChannel: 0 });
@@ -31,4 +31,9 @@ void (async () => {
   // And read it
   const globalSettings = await device.getGlobalSettings();
   console.log('globalSettings.midiChannel', globalSettings.midiChannel);
+
+  // Commands are queued so you can fire off multiple promises without waiting for them
+  void device.goToBank(4);
+  void device.goToBank(3);
+  void device.goToBank(2);
 })();

@@ -2,6 +2,7 @@ import { SerialPort } from 'serialport';
 import { RegexParser } from '@serialport/parser-regex';
 import { Command, CommandOptions } from './types';
 import Debug from 'debug';
+import Queue from './Queue';
 
 const debugVerbose = Debug('verbose:pmu');
 
@@ -26,9 +27,9 @@ const COMMANDS_RECEIVING_DATA = [Command.Check, Command.DataRequest];
 const MESSAGE_PARSE_REGEX = /^(\d+),([\S\s]*)/; // TODO: Consider using named groups: /^(?<commandId>\d+),(?<data>[\S\s]*)/
 
 /**
- * Encapsulates the serial protocol, exposing only a simple runCommand method
+ * Encapsulates the serial protocol, exposing only simple runCommand and queueCommand methods
  */
-export class BaseDevice {
+export class BaseDevice extends Queue {
   // Serial port for sending/receiving data
   #port: SerialPort;
 
@@ -38,10 +39,14 @@ export class BaseDevice {
   // Increment index for command ids
   #commandIndex = 0;
 
-  // We can run one multi-part command at one time, consumers should queue commands externally
+  /**
+   * We can only run one multi-part command at one time.
+   * Consumers should queue commands externally or use queueCommand
+   */
   #busy = false;
 
   constructor(serialPortPath: string) {
+    super();
     this.#port = new SerialPort({ path: serialPortPath, baudRate: 9600 });
     this.#parser = this.#port.pipe(
       new RegexParser({ regex: new RegExp(DELIMITER) })
@@ -200,7 +205,38 @@ export class BaseDevice {
       }
     }
 
+    debug(`Return response: ${response}`);
     this.#busy = false;
     return response;
+  }
+
+  /**
+   * Queue a command to be sent when previous commands are finished, optionally with arguments and return response data (if any)
+   * @param {Command} command - a command string like CHCK
+   * @param  {CommandOptions} options
+   * @param  {String[]} options.args - any arguments for the command
+   * @param  {String} options.data - any (stringified) data to transmit (only valid for data transmit commands)
+   * @returns
+   */
+
+  // Overload without response data
+  protected async queueCommand(
+    command: Command,
+    options?: CommandOptions | undefined
+  ): Promise<string>;
+
+  // Overload with response data
+  protected async queueCommand<ResponseData extends Record<string, unknown>>(
+    command: Command,
+    options?: CommandOptions | undefined
+  ): Promise<ResponseData>;
+
+  protected queueCommand<ResponseData extends Record<string, unknown>>(
+    command: Command,
+    options: CommandOptions = {}
+  ): Promise<string | ResponseData> {
+    return this.enqueue(() => this.runCommand(command, options)) as Promise<
+      string | ResponseData
+    >;
   }
 }

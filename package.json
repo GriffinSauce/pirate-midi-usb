@@ -7,7 +7,7 @@
     "lib/**/*"
   ],
   "scripts": {
-    "examples:testpad": "wds --watch --supervise examples/intro.ts",
+    "examples:intro": "wds --watch --supervise examples/intro.ts",
     "examples:backup": "wds --watch --supervise examples/backup.ts",
     "build": "tsc",
     "clean": "rm -rf ./lib/",
