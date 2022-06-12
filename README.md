@@ -39,7 +39,7 @@ import { getDevices } from 'pirate-midi-usb';
 
 const devices = await getDevices();
 
-const bridge6 = device.find(device => device.deviceName === 'Bridge6')
+const bridge6 = device.find(device => device.deviceName === 'Bridge6');
 ```
 
 Each instance of a device is returned with the `deviceInfo` prefetched. This information could be used to select a specific device when multiple are connected. When no devices are found an empty array will be returned
@@ -48,20 +48,15 @@ Each instance of a device is returned with the `deviceInfo` prefetched. This inf
 
 Check [PirateMidiDevice.ts](src/PirateMidiDevice.ts) to see all implemented methods.
 
-#### Examples
+## Examples
 
-```ts
-// Fetch data from the device
-const globalSettings = await device.getGlobalSettings();
+See the [examples](./examples/) folder, check out the [intro example](./examples/intro.ts) to get started!
 
-// Send data to the device
-await device.setGlobalSettings({ midiChannel: 2 })
+Run examples by their filename:
 
-// Control the device
-await device[0].goToBank(2);
 ```
-
-The returned promise will reject when there is malformed input or an error with the device.
+npm run examples:intro
+```
 
 ## Thanks
 

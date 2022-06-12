@@ -1,9 +1,8 @@
-import { getDevices } from '.';
+import { getDevices } from '../src';
 
 /**
- * TEST PAD FOR DEVELOPMENT
+ * This is a nice test pad for development that shows how to use a few commands
  */
-
 void (async () => {
   // Get all connected PM devices
   const devices = await getDevices();
@@ -19,11 +18,12 @@ void (async () => {
   console.log('device', device.deviceInfo);
 
   // Commands are bound to simple functions and return a promise
+  // The returned promise _should_ reject when there is malformed input or an error with the device.
   const bankSettings = await device.getBankSettings(0);
+  console.log('bankSettings.bankName', bankSettings.bankName);
 
   // Some commands might take arguments & don't return any data
-  // Disabled because these commands have issues
-  // await device.goToBank(1);
+  await device.goToBank(1);
 
   // Send data to the device
   await device.setGlobalSettings({ midiChannel: 0 });

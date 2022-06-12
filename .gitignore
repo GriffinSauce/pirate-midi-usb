@@ -117,6 +117,9 @@ dist
 
 # Compiled code
 lib/
+output
+backups
+build
 
 # env
 .env
