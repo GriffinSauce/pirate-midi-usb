@@ -1,6 +1,10 @@
 import { SerialPort } from 'serialport';
 import { RegexParser } from '@serialport/parser-regex';
 import { Command, CommandOptions } from './types';
+import Debug from 'debug';
+
+const debugVerbose = Debug('verbose:pmu');
+
 /**
  * Commands and response streams are delimited with ~
  */
@@ -33,6 +37,9 @@ export class BaseDevice {
 
   // Increment index for command ids
   #commandIndex = 0;
+
+  // We can run one multi-part command at one time, consumers should queue commands externally
+  #busy = false;
 
   constructor(serialPortPath: string) {
     this.#port = new SerialPort({ path: serialPortPath, baudRate: 9600 });
@@ -129,44 +136,71 @@ export class BaseDevice {
     command: Command,
     options: CommandOptions = {}
   ): Promise<string | ResponseData> {
+    if (this.#busy)
+      throw new Error(
+        'Busy running a command, please queue commands externally to run them in serial'
+      );
+    this.#busy = true;
+
+    const debug = Debug('pmu:runCommand');
+
     const { args, data } = options;
     const commandId = this.#getCommandId();
 
+    debug(`Send command: ${command}`);
+
     let response = await this.#sendReceive(commandId, command);
+    debugVerbose(response);
 
     // When a command has arguments they are sent as a second message
     if (args?.length) {
-      if (response !== 'ok') throw new Error(response);
+      // if (response !== 'ok') throw new Error(response);
+
+      const argsJoined = args.join(',');
+      debug(`Send args: ${argsJoined.slice(0, 30)}`);
 
       // Send args
       const argCommandId = this.#getCommandId();
-      response = await this.#sendReceive(argCommandId, args.join(','));
+      response = await this.#sendReceive(argCommandId, argsJoined);
+      debugVerbose(response);
     }
 
     // Data is sent in another subsequent message
     if (data) {
+      debug(`Send data: ${data.slice(0, 30)}`);
+
       if (command !== Command.DataTransmitRequest)
         throw new Error(`sending data not supported for command ${command}`);
 
-      if (response !== 'ok') throw new Error(response);
+      // if (response !== 'ok') throw new Error(response);
 
       const dataCommandId = this.#getCommandId();
       response = await this.#sendReceive(dataCommandId, data);
+      debugVerbose(response);
     }
 
     // Some commands receive JSON either directly or in response to the second data message
     const parseResponse = COMMANDS_RECEIVING_DATA.includes(command);
     if (parseResponse) {
-      if (response === 'ok') throw new Error('no data received');
+      debug(`Parse response: ${response.slice(0, 30)}...truncated`);
+
+      // if (response === 'ok') throw new Error('no data received');
       try {
         // TODO: add generic to type output
         const parsed: ResponseData = JSON.parse(response);
+        this.#busy = false;
         return parsed;
       } catch (error) {
+        if (response.startsWith('{')) {
+          throw new Error(
+            'error parsing response data - run with DEBUG=pmu:*,verbose:pmu* to log response'
+          );
+        }
         throw new Error(response); // Could be malformed JSON but most likely an error
       }
     }
 
+    this.#busy = false;
     return response;
   }
 }
