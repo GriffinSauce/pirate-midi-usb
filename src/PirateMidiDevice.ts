@@ -1,11 +1,12 @@
+import { SerialPort } from 'serialport';
 import { BankSettings, Command, DeviceInfo, GlobalSettings } from './types';
 import { BaseDevice } from './BaseDevice';
 
 export class PirateMidiDevice extends BaseDevice {
   deviceInfo?: DeviceInfo;
 
-  constructor(serialPortPath: string) {
-    super(serialPortPath);
+  constructor(port: SerialPort) {
+    super(port);
   }
 
   /**

@@ -21,7 +21,8 @@ export const getDevices = async (): Promise<PirateMidiDevice[]> => {
     portsInfo
       .filter(({ manufacturer }) => manufacturer === MANUFACTURER)
       .map(async portInfo => {
-        const device = new PirateMidiDevice(portInfo.path);
+        const port = new SerialPort({ path: portInfo.path, baudRate: 9600 });
+        const device = new PirateMidiDevice(port);
 
         // Populate deviceInfo immediately to reduce friction
         // TODO: error handling

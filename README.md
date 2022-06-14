@@ -48,6 +48,15 @@ Each instance of a device is returned with the `deviceInfo` prefetched. This inf
 
 Check [PirateMidiDevice.ts](src/PirateMidiDevice.ts) to see all implemented methods.
 
+### Debugging
+
+Use environment variables to enable logging:
+
+- `DEBUG=pmu*` - high level logs
+- `DEBUG=verbose:pmu*` - verbose (large output!)
+
+The logs can be filtered by keys, like `pmu:runCommand*`, see Debug docs.
+
 ## Examples
 
 See the [examples](./examples/) folder, check out the [intro example](./examples/intro.ts) to get started!

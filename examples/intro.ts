@@ -36,4 +36,6 @@ void (async () => {
   void device.goToBank(4);
   void device.goToBank(3);
   void device.goToBank(2);
+
+  process.exit(0); // eslint-disable-line no-process-exit
 })();

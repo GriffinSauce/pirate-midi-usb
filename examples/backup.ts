@@ -46,4 +46,6 @@ void (async () => {
   fs.writeFileSync(filePath, JSON.stringify(config, null, 2));
 
   console.log(`Backup written to ${filePath}`);
+
+  process.exit(0); // eslint-disable-line no-process-exit
 })();

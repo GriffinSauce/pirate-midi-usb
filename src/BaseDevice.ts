@@ -3,6 +3,7 @@ import { RegexParser } from '@serialport/parser-regex';
 import { Command, CommandOptions } from './types';
 import Debug from 'debug';
 import Queue from './Queue';
+import { parseMessage } from './utils/parseMessage';
 
 const debugVerbose = Debug('verbose:pmu');
 
@@ -20,11 +21,6 @@ const TIMEOUT_MS = 5000;
  * Commands receiving JSON structured data
  */
 const COMMANDS_RECEIVING_DATA = [Command.Check, Command.DataRequest];
-
-/**
- * Parse a message to it's components (eg. "0,ok~" => "0" and "ok")
- */
-const MESSAGE_PARSE_REGEX = /^(\d+),([\S\s]*)/; // TODO: Consider using named groups: /^(?<commandId>\d+),(?<data>[\S\s]*)/
 
 /**
  * Encapsulates the serial protocol, exposing only simple runCommand and queueCommand methods
@@ -45,9 +41,9 @@ export class BaseDevice extends Queue {
    */
   #busy = false;
 
-  constructor(serialPortPath: string) {
+  constructor(port: SerialPort) {
     super();
-    this.#port = new SerialPort({ path: serialPortPath, baudRate: 9600 });
+    this.#port = port;
     this.#parser = this.#port.pipe(
       new RegexParser({ regex: new RegExp(DELIMITER) })
     );
@@ -67,11 +63,12 @@ export class BaseDevice extends Queue {
    * @returns
    */
   #sendReceive(commandId: number, data: string): Promise<string> {
+    const debug = Debug('pmu:sendReceive');
     const formattedCommand = `${[commandId, data].join(',')}~`;
 
     return new Promise((_resolve, _reject) => {
       const timeout = setTimeout(() => {
-        console.error(`Timeout executing "${formattedCommand}"`); // TODO: use debug
+        debug(`Timeout executing "${formattedCommand}"`);
         _reject('command timed out');
       }, TIMEOUT_MS);
 
@@ -88,26 +85,24 @@ export class BaseDevice extends Queue {
 
       // Wrap reject with cleanup and error debug
       const reject = (errorMessage: string) => {
-        // TODO: use debug
-        console.error(
-          `Error executing "${formattedCommand}" - ${errorMessage}`
-        );
+        debug(`Error executing "${formattedCommand}" - ${errorMessage}`);
         cleanup();
         _reject(errorMessage);
       };
 
       const handleResponse = (rawData: string) => {
-        // TODO: data format validation
-        const matches = MESSAGE_PARSE_REGEX.exec(rawData.trim());
-
-        if (matches === null) return reject('error parsing response');
-
-        const [, idString, data] = matches;
-
-        const id = parseInt(idString);
-        if (id !== commandId) return;
-
-        return resolve(data);
+        debug('rawData', rawData);
+        try {
+          const { id, data } = parseMessage(rawData);
+          if (id !== commandId) return;
+          return resolve(data);
+        } catch (error: unknown) {
+          if (error instanceof Error) {
+            return reject(error.message);
+          }
+          debug('unhandled error', error);
+          reject('unhandled error');
+        }
       };
 
       this.#parser.on('data', handleResponse);
