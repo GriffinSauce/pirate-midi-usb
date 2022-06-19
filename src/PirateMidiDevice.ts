@@ -90,8 +90,12 @@ export class PirateMidiDevice extends BaseDevice {
     return this.queueCommand(Command.Control, { args: ['enterBootloader'] });
   }
 
-  // Disabled for safety because there might not be a confirmation
-  // factoryReset(): Promise<string> {
-  //   return this.runCommand(Command.Control, { args: ['factoryReset'] });
-  // }
+  // Named prop should prevent any accidental fires
+  factoryReset({ sure }: { sure?: boolean } = {}): Promise<string> {
+    if (!sure)
+      throw new Error(
+        'Must be sure about a factory reset, please pass {sure:true}'
+      );
+    return this.runCommand(Command.Control, { args: ['factoryReset'] });
+  }
 }

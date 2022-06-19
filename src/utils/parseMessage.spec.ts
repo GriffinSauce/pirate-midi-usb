@@ -1,4 +1,4 @@
-import { parseMessage } from '../src/utils/parseMessage';
+import { parseMessage } from './parseMessage';
 
 describe('parseMessage', () => {
   it('should parse message with delimiter', () => {
