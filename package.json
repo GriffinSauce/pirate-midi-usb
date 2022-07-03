@@ -2,14 +2,14 @@
   "name": "pirate-midi-usb",
   "version": "0.0.0-development",
   "description": "Easily interact with Pirate Midi devices over USB from Node.js",
-  "main": "./lib/src/index.js",
+  "main": "./lib/index.js",
   "files": [
     "lib/**/*"
   ],
   "scripts": {
     "examples:intro": "wds --watch --supervise examples/intro.ts",
     "examples:backup": "wds --watch --supervise examples/backup.ts",
-    "build": "tsc",
+    "build": "tsc -p ./tsconfig.build.json",
     "clean": "rm -rf ./lib/",
     "cm": "cz",
     "coverage": "codecov",
@@ -71,7 +71,8 @@
     "ts-jest": "^27.0.5",
     "ts-node": "^10.2.1",
     "typescript": "^4.2.4",
-    "wds": "^0.12.0"
+    "wds": "^0.12.0",
+    "xstate": "^4.32.1"
   },
   "config": {
     "commitizen": {
