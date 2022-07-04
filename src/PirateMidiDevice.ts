@@ -1,12 +1,37 @@
 import { SerialPort } from 'serialport';
 import { BankSettings, Command, DeviceInfo, GlobalSettings } from './types';
 import { BaseDevice } from './BaseDevice';
+import { deviceDescriptors } from './data/deviceDescriptors';
+import { ValidationError } from './ValidationError';
 
 export class PirateMidiDevice extends BaseDevice {
   deviceInfo?: DeviceInfo;
 
   constructor(port: SerialPort) {
     super(port);
+  }
+
+  getDeviceDescription() {
+    if (!this.deviceInfo) throw new Error('No device info available');
+    return deviceDescriptors[this.deviceInfo.deviceModel];
+  }
+
+  validateBankNumber(bank: number): void {
+    const { numberBanks } = this.getDeviceDescription();
+    if (typeof bank !== 'number')
+      throw new ValidationError('Not a valid bank number');
+    if (bank < 0 || bank > numberBanks)
+      throw new ValidationError('Bank number out of range');
+  }
+
+  validateFootswitchNumber(footswitch: number): void {
+    const {
+      hardware: { footswitches },
+    } = this.getDeviceDescription();
+    if (typeof footswitch !== 'number')
+      throw new ValidationError('Not a valid bank number');
+    if (footswitch < 0 || footswitch > footswitches)
+      throw new ValidationError('Bank number out of range');
   }
 
   /**
@@ -25,7 +50,8 @@ export class PirateMidiDevice extends BaseDevice {
   }
 
   getBankSettings(bank: number): Promise<BankSettings> {
-    // TODO: validate input
+    this.validateBankNumber(bank);
+
     return this.queueCommand<BankSettings>(Command.DataRequest, {
       args: ['bankSettings', String(bank)],
     });
@@ -53,7 +79,10 @@ export class PirateMidiDevice extends BaseDevice {
     bank: number,
     bankSettings: Partial<BankSettings>
   ): Promise<string> {
-    // TODO: validate input
+    this.validateBankNumber(bank);
+
+    // TODO: validate data input
+
     return this.queueCommand(Command.DataTransmitRequest, {
       args: ['bankSettings', String(bank)],
       data: JSON.stringify(bankSettings),
@@ -69,14 +98,16 @@ export class PirateMidiDevice extends BaseDevice {
   }
 
   goToBank(bank: number): Promise<string> {
-    // TODO: validate input
+    this.validateBankNumber(bank);
+
     return this.queueCommand(Command.Control, {
       args: ['goToBank', String(bank)],
     });
   }
 
   toggleFootswitch(footswitch: number): Promise<string> {
-    // TODO: validate input
+    this.validateFootswitchNumber(footswitch);
+
     return this.queueCommand(Command.Control, {
       args: ['toggleFootswitch', String(footswitch)],
     });
@@ -93,9 +124,10 @@ export class PirateMidiDevice extends BaseDevice {
   // Named prop should prevent any accidental fires
   factoryReset({ sure }: { sure?: boolean } = {}): Promise<string> {
     if (!sure)
-      throw new Error(
+      throw new ValidationError(
         'Must be sure about a factory reset, please pass {sure:true}'
       );
+
     return this.runCommand(Command.Control, { args: ['factoryReset'] });
   }
 }

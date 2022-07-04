@@ -38,6 +38,11 @@ export class DevicePortMock extends SerialPortMock {
     });
   }
 
+  resetRecording(): void {
+    this.receivedMessages = [];
+    this.sentMessages = [];
+  }
+
   sendResponse = (response: string) => {
     this.receivedMessages.push(response);
 
