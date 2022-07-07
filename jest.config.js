@@ -21,7 +21,6 @@ module.exports = {
   ],
   transform: {
     '^.+\\.(t|j)s?$': ['@swc/jest', swcOptions],
-    '^.+\\.(t|j)s?$': ['@swc/jest', swcOptions],
   },
   transformIgnorePatterns: [],
 };
