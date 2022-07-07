@@ -1,4 +1,7 @@
-import { SerialPortMock, SerialPortMockOpenOptions } from 'serialport';
+import {
+  SerialPortMock,
+  SerialPortMockOpenOptions,
+} from 'serialport/dist/serialport-mock'; // Avoid circular dep when extending serialport dependency
 import { MockBinding } from '@serialport/binding-mock';
 import { createDevice, Device, DeviceState } from './device';
 

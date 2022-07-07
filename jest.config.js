@@ -1,15 +1,27 @@
+const swcOptions = {
+  jsc: {
+    parser: {
+      syntax: 'typescript',
+      tsx: false,
+      decorators: true,
+      dynamicImport: true,
+    },
+  },
+  module: {
+    type: 'cjs',
+  },
+};
+
 module.exports = {
-  preset: 'ts-jest',
   testEnvironment: 'node',
   testMatch: ['**/*.spec.ts'],
   collectCoverageFrom: [
     '<rootDir>/src/**/*.ts',
     '!<rootDir>/src/types/**/*.ts',
   ],
-  globals: {
-    'ts-jest': {
-      diagnostics: false,
-      isolatedModules: true,
-    },
+  transform: {
+    '^.+\\.(t|j)s?$': ['@swc/jest', swcOptions],
+    '^.+\\.(t|j)s?$': ['@swc/jest', swcOptions],
   },
+  transformIgnorePatterns: [],
 };
