@@ -1,5 +1,5 @@
 import { SerialPort } from 'serialport';
-import { BankSettings, Command, DeviceInfo, GlobalSettings } from './types';
+import { BankSettings, Command, DeviceInfo, GlobalSettings } from './schemas';
 import { BaseDevice } from './BaseDevice';
 import { deviceDescriptors } from './data/deviceDescriptors';
 import { ValidationError } from './ValidationError';

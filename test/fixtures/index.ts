@@ -3,7 +3,7 @@ import {
   DeviceInfo,
   Footswitch,
   GlobalSettings,
-} from '../../src/types';
+} from '../../src/schemas';
 
 export const deviceInfo: DeviceInfo = {
   deviceModel: 'Bridge6',

@@ -1,6 +1,6 @@
 import { SerialPort } from 'serialport';
 import { RegexParser } from '@serialport/parser-regex';
-import { Command, CommandOptions } from './types';
+import { Command, CommandOptions } from './schemas';
 import Debug from 'debug';
 import Queue from './Queue';
 import { parseMessage } from './utils/parseMessage';

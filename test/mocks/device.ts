@@ -4,7 +4,7 @@ import {
   Command,
   DeviceInfo,
   GlobalSettings,
-} from '../../src/types';
+} from '../../src/schemas';
 import { parseMessage } from '../../src/utils/parseMessage';
 
 export interface DeviceState {

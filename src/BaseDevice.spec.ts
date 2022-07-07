@@ -2,7 +2,7 @@ import { SerialPort } from 'serialport';
 import { BaseDevice } from './BaseDevice';
 import { deviceInfo, globalSettings } from '../test/fixtures';
 import { DevicePortMock, getDevicePortMock } from '../test/mocks/devicePort';
-import { Command } from './types';
+import { Command } from './schemas';
 
 describe('BaseDevice', () => {
   let port: DevicePortMock;
