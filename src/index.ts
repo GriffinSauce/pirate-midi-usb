@@ -1,45 +1,28 @@
-import { SerialPort } from 'serialport';
 import { PirateMidiDevice } from './PirateMidiDevice';
+import { NodeSerialPort } from './serial/NodeSerialPort';
+import { GetDevices } from './types';
 
-// Consider WebSerial binding to make this portable
-// https://github.com/nathanjel/serialport-binding-web-serial-api
-
-/**
- * Device manufacturer key, use to filter USB devices
- */
-const MANUFACTURER = 'Pirate MIDI';
+export * from './types';
+export { PirateMidiDevice } from './PirateMidiDevice';
+export { ValidationError } from './ValidationError';
 
 /**
  * Get any available Pirate Midi devices with device info set
- * @returns { PirateMidiDevice[] }
  */
-export const getDevices = async (): Promise<PirateMidiDevice[]> => {
+export const getDevices: GetDevices = async () => {
   // TODO: error handling
-  const portsInfo = await SerialPort.list();
 
+  const ports = await NodeSerialPort.list();
   return Promise.all(
-    portsInfo
-      .filter(({ manufacturer }) => manufacturer === MANUFACTURER)
-      .map(async portInfo => {
-        const port = new SerialPort({
-          path: portInfo.path,
-          baudRate: 9600,
-          autoOpen: false,
-        });
+    ports.map(async port => {
+      await port.connect();
 
-        // Auto open doesn't wait
-        const error = await new Promise(resolve => {
-          port.open(resolve);
-        });
-        if (error) throw error;
+      const device = new PirateMidiDevice(port);
 
-        const device = new PirateMidiDevice(port);
+      // Populate deviceInfo immediately to reduce friction
+      await device.updateDeviceInfo();
 
-        // Populate deviceInfo immediately to reduce friction
-        // TODO: error handling
-        await device.updateDeviceInfo();
-
-        return device;
-      })
+      return device;
+    })
   );
 };

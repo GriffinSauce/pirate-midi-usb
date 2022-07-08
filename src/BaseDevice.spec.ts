@@ -3,6 +3,7 @@ import { BaseDevice } from './BaseDevice';
 import { deviceInfo, globalSettings } from '../test/fixtures';
 import { DevicePortMock, getDevicePortMock } from '../test/mocks/devicePort';
 import { Command } from './types';
+import { NodeSerialPort } from './serial/NodeSerialPort';
 
 describe('BaseDevice', () => {
   let port: DevicePortMock;
@@ -14,7 +15,9 @@ describe('BaseDevice', () => {
       globalSettings,
       banks: [],
     });
-    baseDevice = new BaseDevice(port as unknown as SerialPort);
+    baseDevice = new BaseDevice(
+      new NodeSerialPort(port as unknown as SerialPort)
+    );
   });
 
   describe('command composition', () => {

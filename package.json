@@ -3,6 +3,27 @@
   "version": "0.0.0-development",
   "description": "Easily interact with Pirate Midi devices over USB from Node.js",
   "main": "./lib/index.js",
+  "module": "./lib/index.esm.js",
+  "browser": {
+    "./lib/index.js": "./lib/index.browser.js",
+    "./lib/index.esm.js": "./lib/index.browser.esm.js"
+  },
+  "exports": {
+    "node": {
+      "import": "./lib/index.esm.js",
+      "module": "./lib/index.esm.js",
+      "default": "./lib/index.js"
+    },
+    "browser": {
+      "import": "./lib/index.browser.esm.js",
+      "module": "./lib/index.browser.esm.js",
+      "default": "./lib/index.browser.js"
+    },
+    "import": "./lib/index.browser.esm.js",
+    "module": "./lib/index.browser.js",
+    "default": "./lib/index.browser.js"
+  },
+  "types": "./lib/lib/index.d.ts",
   "files": [
     "lib/**/*"
   ],
@@ -10,7 +31,7 @@
     "examples:intro": "wds --watch --supervise examples/intro.ts",
     "examples:backup": "wds --watch --supervise examples/backup.ts",
     "examples:restore": "wds --watch --supervise examples/restore.ts",
-    "build": "tsc -p ./tsconfig.build.json",
+    "build": " npx rollup -c",
     "clean": "rm -rf ./lib/",
     "cm": "cz",
     "coverage": "codecov",
@@ -52,6 +73,9 @@
   },
   "homepage": "https://github.com/GriffinSauce/pirate-midi-usb#readme",
   "devDependencies": {
+    "@rollup/plugin-commonjs": "^22.0.1",
+    "@rollup/plugin-node-resolve": "^13.3.0",
+    "@rollup/plugin-typescript": "^8.3.3",
     "@ryansonshine/commitizen": "^4.2.8",
     "@ryansonshine/cz-conventional-changelog": "^3.3.4",
     "@serialport/binding-mock": "^10.2.2",
@@ -60,6 +84,7 @@
     "@types/jest": "^27.5.2",
     "@types/node": "^12.20.11",
     "@types/node-fetch": "^2.6.2",
+    "@types/w3c-web-serial": "^1.0.2",
     "@typescript-eslint/eslint-plugin": "^4.22.0",
     "@typescript-eslint/parser": "^4.22.0",
     "codecov": "^3.8.3",
@@ -72,6 +97,8 @@
     "lint-staged": "^10.5.4",
     "node-fetch": "^2.6.7",
     "prettier": "^2.2.1",
+    "rollup-plugin-polyfill-node": "^0.10.1",
+    "rollup": "^2.76.0",
     "semantic-release": "^19.0.2",
     "ts-jest": "^27.0.5",
     "ts-node": "^10.2.1",
