@@ -9,6 +9,7 @@
   "scripts": {
     "examples:intro": "wds --watch --supervise examples/intro.ts",
     "examples:backup": "wds --watch --supervise examples/backup.ts",
+    "examples:restore": "wds --watch --supervise examples/restore.ts",
     "build": "tsc -p ./tsconfig.build.json",
     "clean": "rm -rf ./lib/",
     "cm": "cz",
