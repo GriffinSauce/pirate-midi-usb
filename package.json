@@ -23,7 +23,7 @@
     "module": "./lib/index.browser.js",
     "default": "./lib/index.browser.js"
   },
-  "types": "./lib/lib/index.d.ts",
+  "types": "./lib/index.d.ts",
   "files": [
     "lib/**/*"
   ],
