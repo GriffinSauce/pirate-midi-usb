@@ -1,53 +1,9 @@
-import { useState } from 'react';
-import { getDevices, PirateMidiDevice } from '../../..';
+import dynamic from 'next/dynamic';
+
+// Next does server side rendering and tries to import the Node variant of the lib
+// So with dynamic import we can force the import to only happen client side and pick the right import
+const Example = dynamic(() => import('../components/Example'), { ssr: false });
 
 export default function Home() {
-  const [active, setActive] = useState<boolean>(false);
-  const [device, setDevice] = useState<PirateMidiDevice>();
-
-  const connect = async () => {
-    let _device: PirateMidiDevice;
-    try {
-      [_device] = await getDevices();
-    } catch (error) {
-      console.error(error);
-    }
-
-    setDevice(_device);
-    setActive(true);
-
-    _device.on('disconnect', () => {
-      setActive(false);
-    });
-
-    _device.on('connect', () => {
-      setActive(true);
-    });
-  };
-
-  const logDeviceInfo = () => console.log(device.deviceInfo);
-
-  const setBankName = () =>
-    device.setBankSettings(1, { bankName: 'Browser 2' });
-
-  const getGlobalSettings = async () =>
-    console.log(await device.getGlobalSettings());
-
-  return (
-    <>
-      <main>
-        {active ? (
-          <>
-            <button onClick={logDeviceInfo}>Log device info</button>
-            <button onClick={setBankName}>Set bank name</button>
-            <button onClick={getGlobalSettings}>Get global settings</button>
-          </>
-        ) : (
-          <>
-            <button onClick={connect}>Connect with device</button>
-          </>
-        )}
-      </main>
-    </>
-  );
+  return <Example />;
 }
