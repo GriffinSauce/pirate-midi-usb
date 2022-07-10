@@ -25,7 +25,8 @@
   },
   "types": "./lib/lib/index.d.ts",
   "files": [
-    "lib/**/*"
+    "lib/**/*",
+    "scripts/**/*"
   ],
   "scripts": {
     "examples:intro": "wds --watch --supervise examples/intro.ts",
