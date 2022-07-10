@@ -28,4 +28,6 @@ void (async () => {
 
   if (!fs.existsSync(outDir)) fs.mkdirSync(outDir);
   fs.writeFileSync(outputPath, formattedContent);
+
+  console.info(`Device descriptors downloaded to ${outputPath}`);
 })();
