@@ -1,7 +1,7 @@
 {
   "name": "pirate-midi-usb",
   "version": "0.0.0-development",
-  "description": "Easily interact with Pirate Midi devices over USB from Node.js",
+  "description": "Easily interact with Pirate Midi devices over USB from JavaScript",
   "main": "./lib/index.js",
   "module": "./lib/index.esm.js",
   "browser": {
@@ -93,11 +93,8 @@
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-prettier": "^3.4.0",
-    "husky": "^6.0.0",
     "jest": "^27.2.0",
     "lint-staged": "^10.5.4",
-    "node-fetch": "^2.6.7",
-    "prettier": "^2.2.1",
     "rollup-plugin-polyfill-node": "^0.10.1",
     "rollup": "^2.76.0",
     "semantic-release": "^19.0.2",
@@ -122,6 +119,9 @@
   "dependencies": {
     "@serialport/parser-regex": "^10.3.0",
     "debug": "^4.3.4",
+    "husky": "^6.0.0",
+    "node-fetch": "^2.6.7",
+    "prettier": "^2.2.1",
     "serialport": "^10.4.0",
     "wds": "^0.12.0"
   }
