@@ -1,21 +1,16 @@
-import { SerialPort } from 'serialport';
-import { RegexParser } from '@serialport/parser-regex';
 import { Command, CommandOptions } from './types';
 import Debug from 'debug';
 import Queue from './Queue';
 import { parseMessage } from './utils/parseMessage';
+import { NodeSerialPort } from './serial/NodeSerialPort';
+import { WebSerialPort } from './serial/WebSerialPort';
 
 const debugVerbose = Debug('verbose:pmu');
 
 /**
- * Commands and response streams are delimited with ~
- */
-const DELIMITER = '~';
-
-/**
  * Command timeout
  */
-const TIMEOUT_MS = 5000;
+const TIMEOUT_MS = 1000;
 
 /**
  * Commands receiving JSON structured data
@@ -25,13 +20,7 @@ const COMMANDS_RECEIVING_DATA = [Command.Check, Command.DataRequest];
 /**
  * Encapsulates the serial protocol, exposing only simple runCommand and queueCommand methods
  */
-export class BaseDevice extends Queue {
-  // Serial port for sending/receiving data
-  #port: SerialPort;
-
-  // Serial port with parser inlined to chunk received data
-  #parser: RegexParser;
-
+export class BaseDevice {
   // Increment index for command ids
   #commandIndex = 0;
 
@@ -41,12 +30,13 @@ export class BaseDevice extends Queue {
    */
   #busy = false;
 
-  constructor(port: SerialPort) {
-    super();
+  #port: NodeSerialPort | WebSerialPort;
+
+  #queue: Queue;
+
+  constructor(port: NodeSerialPort | WebSerialPort) {
     this.#port = port;
-    this.#parser = this.#port.pipe(
-      new RegexParser({ regex: new RegExp(DELIMITER) })
-    );
+    this.#queue = new Queue();
   }
 
   /**
@@ -69,12 +59,13 @@ export class BaseDevice extends Queue {
     return new Promise((_resolve, _reject) => {
       const timeout = setTimeout(() => {
         debug(`Timeout executing "${formattedCommand}"`);
+        this.#port.off('data', handleResponse);
         _reject('command timed out');
       }, TIMEOUT_MS);
 
       const cleanup = () => {
         clearTimeout(timeout);
-        this.#parser.off('data', handleResponse);
+        this.#port.off('data', handleResponse);
       };
 
       // Wrap resolve with cleanup
@@ -105,9 +96,9 @@ export class BaseDevice extends Queue {
         }
       };
 
-      this.#parser.on('data', handleResponse);
+      this.#port.on('data', handleResponse);
 
-      this.#port.write(formattedCommand);
+      void this.#port.write(formattedCommand);
     });
   }
 
@@ -149,7 +140,13 @@ export class BaseDevice extends Queue {
 
     debug(`Send command: ${command}`);
 
-    let response = await this.#sendReceive(commandId, command);
+    let response;
+    try {
+      response = await this.#sendReceive(commandId, command);
+    } catch (error) {
+      this.#busy = false;
+      throw error;
+    }
     debugVerbose(response);
 
     // When a command has arguments they are sent as a second message
@@ -161,7 +158,13 @@ export class BaseDevice extends Queue {
 
       // Send args
       const argCommandId = this.#getCommandId();
-      response = await this.#sendReceive(argCommandId, argsJoined);
+      try {
+        response = await this.#sendReceive(argCommandId, argsJoined);
+      } catch (error) {
+        this.#busy = false;
+        throw error;
+      }
+
       debugVerbose(response);
     }
 
@@ -175,9 +178,19 @@ export class BaseDevice extends Queue {
       // if (response !== 'ok') throw new Error(response);
 
       const dataCommandId = this.#getCommandId();
-      response = await this.#sendReceive(dataCommandId, data);
+      try {
+        response = await this.#sendReceive(dataCommandId, data);
+      } catch (error) {
+        this.#busy = false;
+        throw error;
+      }
+
       debugVerbose(response);
     }
+
+    // Help TS pick the right response type
+    if (typeof response !== 'string')
+      throw new Error(`Unexpected data ${typeof response}`);
 
     // Some commands receive JSON either directly or in response to the second data message
     const parseResponse = COMMANDS_RECEIVING_DATA.includes(command);
@@ -215,23 +228,23 @@ export class BaseDevice extends Queue {
    */
 
   // Overload without response data
-  protected async queueCommand(
+  async queueCommand(
     command: Command,
     options?: CommandOptions | undefined
   ): Promise<string>;
 
   // Overload with response data
-  protected async queueCommand<ResponseData extends Record<string, unknown>>(
+  async queueCommand<ResponseData extends Record<string, unknown>>(
     command: Command,
     options?: CommandOptions | undefined
   ): Promise<ResponseData>;
 
-  protected queueCommand<ResponseData extends Record<string, unknown>>(
+  queueCommand<ResponseData extends Record<string, unknown>>(
     command: Command,
     options: CommandOptions = {}
   ): Promise<string | ResponseData> {
-    return this.enqueue(() => this.runCommand(command, options)) as Promise<
-      string | ResponseData
-    >;
+    return this.#queue.enqueue(() =>
+      this.runCommand(command, options)
+    ) as Promise<string | ResponseData>;
   }
 }

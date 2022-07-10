@@ -1,14 +1,27 @@
-import { SerialPort } from 'serialport';
 import { BankSettings, Command, DeviceInfo, GlobalSettings } from './types';
 import { BaseDevice } from './BaseDevice';
 import { deviceDescriptors } from './data/deviceDescriptors';
 import { ValidationError } from './ValidationError';
+import { NodeSerialPort } from './serial/NodeSerialPort';
+import { WebSerialPort } from './serial/WebSerialPort';
+import EventEmitter from 'events';
 
-export class PirateMidiDevice extends BaseDevice {
+export class PirateMidiDevice extends EventEmitter {
   deviceInfo?: DeviceInfo;
+  baseDevice: BaseDevice;
 
-  constructor(port: SerialPort) {
-    super(port);
+  constructor(port: NodeSerialPort | WebSerialPort) {
+    super();
+
+    this.baseDevice = new BaseDevice(port);
+
+    port.on('connect', () => {
+      this.emit('connect');
+    });
+
+    port.on('disconnect', () => {
+      this.emit('disconnect');
+    });
   }
 
   getDeviceDescription() {
@@ -39,12 +52,14 @@ export class PirateMidiDevice extends BaseDevice {
    * @returns {DeviceInfo} - device information like the model and firmware version
    */
   async updateDeviceInfo(): Promise<DeviceInfo> {
-    this.deviceInfo = await this.queueCommand<DeviceInfo>(Command.Check);
+    this.deviceInfo = await this.baseDevice.queueCommand<DeviceInfo>(
+      Command.Check
+    );
     return this.deviceInfo;
   }
 
   getGlobalSettings(): Promise<GlobalSettings> {
-    return this.queueCommand<GlobalSettings>(Command.DataRequest, {
+    return this.baseDevice.queueCommand<GlobalSettings>(Command.DataRequest, {
       args: ['globalSettings'],
     });
   }
@@ -52,7 +67,7 @@ export class PirateMidiDevice extends BaseDevice {
   getBankSettings(bank: number): Promise<BankSettings> {
     this.validateBankNumber(bank);
 
-    return this.queueCommand<BankSettings>(Command.DataRequest, {
+    return this.baseDevice.queueCommand<BankSettings>(Command.DataRequest, {
       args: ['bankSettings', String(bank)],
     });
   }
@@ -62,14 +77,14 @@ export class PirateMidiDevice extends BaseDevice {
    */
   setProfileId(profileId: string): Promise<string> {
     // TODO: validate input
-    return this.queueCommand(Command.DataTransmitRequest, {
+    return this.baseDevice.queueCommand(Command.DataTransmitRequest, {
       args: ['profileId', profileId],
     });
   }
 
   setGlobalSettings(globalSettings: Partial<GlobalSettings>): Promise<string> {
     // TODO: validate input
-    return this.queueCommand(Command.DataTransmitRequest, {
+    return this.baseDevice.queueCommand(Command.DataTransmitRequest, {
       args: ['globalSettings'],
       data: JSON.stringify(globalSettings),
     });
@@ -83,24 +98,26 @@ export class PirateMidiDevice extends BaseDevice {
 
     // TODO: validate data input
 
-    return this.queueCommand(Command.DataTransmitRequest, {
+    return this.baseDevice.queueCommand(Command.DataTransmitRequest, {
       args: ['bankSettings', String(bank)],
       data: JSON.stringify(bankSettings),
     });
   }
 
   bankUp(): Promise<string> {
-    return this.queueCommand(Command.Control, { args: ['bankUp'] });
+    return this.baseDevice.queueCommand(Command.Control, { args: ['bankUp'] });
   }
 
   bankDown(): Promise<string> {
-    return this.queueCommand(Command.Control, { args: ['bankDown'] });
+    return this.baseDevice.queueCommand(Command.Control, {
+      args: ['bankDown'],
+    });
   }
 
   goToBank(bank: number): Promise<string> {
     this.validateBankNumber(bank);
 
-    return this.queueCommand(Command.Control, {
+    return this.baseDevice.queueCommand(Command.Control, {
       args: ['goToBank', String(bank)],
     });
   }
@@ -108,17 +125,21 @@ export class PirateMidiDevice extends BaseDevice {
   toggleFootswitch(footswitch: number): Promise<string> {
     this.validateFootswitchNumber(footswitch);
 
-    return this.queueCommand(Command.Control, {
+    return this.baseDevice.queueCommand(Command.Control, {
       args: ['toggleFootswitch', String(footswitch)],
     });
   }
 
   deviceRestart(): Promise<string> {
-    return this.queueCommand(Command.Control, { args: ['deviceRestart'] });
+    return this.baseDevice.queueCommand(Command.Control, {
+      args: ['deviceRestart'],
+    });
   }
 
   enterBootloader(): Promise<string> {
-    return this.queueCommand(Command.Control, { args: ['enterBootloader'] });
+    return this.baseDevice.queueCommand(Command.Control, {
+      args: ['enterBootloader'],
+    });
   }
 
   // Named prop should prevent any accidental fires
@@ -128,6 +149,8 @@ export class PirateMidiDevice extends BaseDevice {
         'Must be sure about a factory reset, please pass {sure:true}'
       );
 
-    return this.runCommand(Command.Control, { args: ['factoryReset'] });
+    return this.baseDevice.queueCommand(Command.Control, {
+      args: ['factoryReset'],
+    });
   }
 }
