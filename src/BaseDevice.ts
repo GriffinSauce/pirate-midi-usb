@@ -82,7 +82,7 @@ export class BaseDevice {
       };
 
       const handleResponse = (rawData: string) => {
-        debug('rawData', rawData);
+        debug('in', rawData);
         try {
           const { id, data } = parseMessage(rawData);
           if (id !== commandId) return;
@@ -98,6 +98,7 @@ export class BaseDevice {
 
       this.#port.on('data', handleResponse);
 
+      debug('out', formattedCommand);
       void this.#port.write(formattedCommand);
     });
   }
