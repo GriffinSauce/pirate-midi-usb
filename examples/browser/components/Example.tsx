@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { getDevices, PirateMidiDevice } from '../../..';
+import { PirateMidiDevice } from '../../..';
 
 export default function Example() {
   const [active, setActive] = useState<boolean>(false);
@@ -8,6 +8,9 @@ export default function Example() {
   const connect = async () => {
     let _device: PirateMidiDevice;
     try {
+      // Dynamic import so Next picks the browser export
+      const { getDevices } = await import('../../..');
+
       [_device] = await getDevices();
     } catch (error) {
       console.error(error);
