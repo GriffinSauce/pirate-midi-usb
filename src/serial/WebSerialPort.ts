@@ -1,5 +1,9 @@
+import { serial as polyfill } from 'web-serial-polyfill';
 import { MessageTransformer } from './MessageTransformer';
 import EventEmitter from 'events';
+
+// const serial = navigator.serial || polyfill;
+const serial = polyfill;
 
 /**
  * Device vendor id, use to filter USB devices
@@ -21,11 +25,12 @@ export class WebSerialPort extends EventEmitter {
   async connect(): Promise<void> {
     try {
       // Prompt user to select any serial port.
-      this.port = await navigator.serial.requestPort({
+      this.port = await serial.requestPort({
         filters: [{ usbVendorId: USB_VENDOR_ID }],
       });
       await this.#open();
     } catch (error) {
+      console.error('error', error);
       const message =
         error instanceof Error ? error.message : (error as string);
       throw new Error(`Requesting port failed - ${message}`);
@@ -121,16 +126,16 @@ export class WebSerialPort extends EventEmitter {
     this.emit('disconnect');
     console.info('Device disconnected');
 
-    navigator.serial.removeEventListener('disconnect', this.#onDisconnect);
+    serial.removeEventListener('disconnect', this.#onDisconnect);
 
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
-    navigator.serial.addEventListener('connect', this.#onReconnect);
+    serial.addEventListener('connect', this.#onReconnect);
 
     void this.close();
   };
 
   #onReconnect = async (event: Event): Promise<void> => {
-    const ports = await navigator.serial.getPorts();
+    const ports = await serial.getPorts();
 
     if (ports.length > 2) {
       console.log('Cannot safely reconnect, unsure which device is which');
@@ -144,7 +149,7 @@ export class WebSerialPort extends EventEmitter {
     if (!port) return;
 
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
-    navigator.serial.removeEventListener('connect', this.#onReconnect);
+    serial.removeEventListener('connect', this.#onReconnect);
 
     console.info('Trying to reopen port');
 
@@ -158,6 +163,6 @@ export class WebSerialPort extends EventEmitter {
   };
 
   #monitorConnection(): void {
-    navigator.serial.addEventListener('disconnect', this.#onDisconnect);
+    serial.addEventListener('disconnect', this.#onDisconnect);
   }
 }
