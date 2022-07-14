@@ -1,22 +1,18 @@
-import { SerialPort } from 'serialport';
 import { PirateMidiDevice } from './PirateMidiDevice';
 import { bankSettings, deviceInfo, globalSettings } from '../test/fixtures';
-import { DevicePortMock, getDevicePortMock } from '../test/mocks/devicePort';
-import { NodeSerialPort } from './serial/NodeSerialPort';
+import { DevicePortMock } from '../test/mocks/DevicePortMock';
 
 describe('PirateMidiDevice', () => {
   let port: DevicePortMock;
   let device: PirateMidiDevice;
 
-  beforeEach(async () => {
-    port = await getDevicePortMock({
+  beforeEach(() => {
+    port = new DevicePortMock({
       deviceInfo,
       globalSettings,
       banks: [],
     });
-    device = new PirateMidiDevice(
-      new NodeSerialPort(port as unknown as SerialPort)
-    );
+    device = new PirateMidiDevice(port);
   });
 
   describe('pre-updateDeviceInfo', () => {
@@ -78,14 +74,12 @@ describe('PirateMidiDevice', () => {
       const bank1 = { ...bankSettings, bankId: '1' };
 
       beforeEach(async () => {
-        port = await getDevicePortMock({
+        port = new DevicePortMock({
           deviceInfo,
           globalSettings,
           banks: [bank0, bank1],
         });
-        device = new PirateMidiDevice(
-          new NodeSerialPort(port as unknown as SerialPort)
-        );
+        device = new PirateMidiDevice(port);
 
         await device.updateDeviceInfo();
         port.resetRecording();

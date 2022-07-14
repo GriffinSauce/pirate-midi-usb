@@ -4,6 +4,9 @@ import Queue from './Queue';
 import { parseMessage } from './utils/parseMessage';
 import { NodeSerialPort } from './serial/NodeSerialPort';
 import { WebSerialPort } from './serial/WebSerialPort';
+import { DevicePortMock } from '../test/mocks/DevicePortMock';
+
+type PortImplementation = NodeSerialPort | WebSerialPort | DevicePortMock;
 
 const debugVerbose = Debug('verbose:pmu');
 
@@ -30,11 +33,11 @@ export class BaseDevice {
    */
   #busy = false;
 
-  #port: NodeSerialPort | WebSerialPort;
+  #port: PortImplementation;
 
   #queue: Queue;
 
-  constructor(port: NodeSerialPort | WebSerialPort) {
+  constructor(port: PortImplementation) {
     this.#port = port;
     this.#queue = new Queue();
   }

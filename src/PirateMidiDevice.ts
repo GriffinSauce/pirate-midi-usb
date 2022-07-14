@@ -5,12 +5,13 @@ import { ValidationError } from './ValidationError';
 import { NodeSerialPort } from './serial/NodeSerialPort';
 import { WebSerialPort } from './serial/WebSerialPort';
 import EventEmitter from 'events';
+import { DevicePortMock } from '../test/mocks/DevicePortMock';
 
 export class PirateMidiDevice extends EventEmitter {
   deviceInfo?: DeviceInfo;
   baseDevice: BaseDevice;
 
-  constructor(port: NodeSerialPort | WebSerialPort) {
+  constructor(port: NodeSerialPort | WebSerialPort | DevicePortMock) {
     super();
 
     this.baseDevice = new BaseDevice(port);

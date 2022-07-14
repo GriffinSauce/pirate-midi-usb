@@ -1,23 +1,19 @@
-import { SerialPort } from 'serialport';
 import { BaseDevice } from './BaseDevice';
 import { deviceInfo, globalSettings } from '../test/fixtures';
-import { DevicePortMock, getDevicePortMock } from '../test/mocks/devicePort';
+import { DevicePortMock } from '../test/mocks/DevicePortMock';
 import { Command } from './types';
-import { NodeSerialPort } from './serial/NodeSerialPort';
 
 describe('BaseDevice', () => {
   let port: DevicePortMock;
   let baseDevice: BaseDevice;
 
-  beforeEach(async () => {
-    port = await getDevicePortMock({
+  beforeEach(() => {
+    port = new DevicePortMock({
       deviceInfo,
       globalSettings,
       banks: [],
     });
-    baseDevice = new BaseDevice(
-      new NodeSerialPort(port as unknown as SerialPort)
-    );
+    baseDevice = new BaseDevice(port);
   });
 
   describe('command composition', () => {

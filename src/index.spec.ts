@@ -1,17 +1,18 @@
 import { getDevices } from '.';
-import { deviceInfo, globalSettings } from '../test/fixtures';
-import { getDevicePortMock } from '../test/mocks/devicePort';
 import * as SerialPortModule from 'serialport';
 import { PirateMidiDevice } from './PirateMidiDevice';
+import { MockBinding } from '@serialport/binding-mock';
 
 jest.mock('serialport', () => {
   const actual = jest.requireActual('serialport');
-  const { DevicePortMock } = jest.requireActual('../test/mocks/devicePort');
+  const { SerialPortMock } = actual;
   return {
     ...actual,
-    SerialPort: DevicePortMock,
+    SerialPort: SerialPortMock,
   } as typeof SerialPortModule;
 });
+
+jest.mock('./PirateMidiDevice');
 
 describe('index', () => {
   describe('getDevices', () => {
@@ -25,10 +26,10 @@ describe('index', () => {
 
     describe('device available', () => {
       it('should return device', async () => {
-        await getDevicePortMock({
-          deviceInfo,
-          globalSettings,
-          banks: [],
+        MockBinding.createPort('/dev/test', {
+          manufacturer: 'Pirate MIDI',
+          vendorId: '0483',
+          productId: '5740',
         });
 
         const devices = await getDevices();

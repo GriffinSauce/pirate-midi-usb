@@ -11,7 +11,8 @@
     "forceConsistentCasingInFileNames": true,
     "types": [
       "node",
-      "w3c-web-serial"
+      "w3c-web-serial",
+      "jest"
     ]
   },
   "include": ["src/**/*.ts", "scripts/**/*.ts"],
