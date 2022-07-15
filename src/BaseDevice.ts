@@ -63,7 +63,7 @@ export class BaseDevice {
       const timeout = setTimeout(() => {
         debug(`Timeout executing "${formattedCommand}"`);
         this.#port.off('data', handleResponse);
-        _reject('command timed out');
+        _reject(new Error('command timed out'));
       }, TIMEOUT_MS);
 
       const cleanup = () => {
@@ -81,7 +81,7 @@ export class BaseDevice {
       const reject = (errorMessage: string) => {
         debug(`Error executing "${formattedCommand}" - ${errorMessage}`);
         cleanup();
-        _reject(errorMessage);
+        _reject(new Error(errorMessage));
       };
 
       const handleResponse = (rawData: string) => {

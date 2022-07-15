@@ -38,8 +38,8 @@
     "lint": "eslint ./src/ --fix",
     "prepare": "husky install && wds ./scripts/download-device-descriptors.ts",
     "semantic-release": "semantic-release",
-    "test:watch": "jest --watch",
-    "test": "jest --coverage",
+    "test:watch": "vitest --watch --config test/vitest.config.ts",
+    "test": "vitest --coverage --config test/vitest.config.ts",
     "typecheck": "tsc --noEmit"
   },
   "repository": {
@@ -85,6 +85,7 @@
     "@types/w3c-web-serial": "^1.0.2",
     "@typescript-eslint/eslint-plugin": "^4.22.0",
     "@typescript-eslint/parser": "^4.22.0",
+    "c8": "^7.11.3",
     "codecov": "^3.8.3",
     "eslint": "^7.25.0",
     "eslint-config-prettier": "^8.3.0",
@@ -101,6 +102,7 @@
     "ts-jest": "^27.0.5",
     "ts-node": "^10.2.1",
     "typescript": "^4.2.4",
+    "vitest": "^0.18.0",
     "wds": "^0.12.0",
     "xstate": "^4.32.1"
   },
@@ -118,6 +120,8 @@
     ]
   },
   "dependencies": {
+    "@serialport/bindings-cpp": "^10.7.0",
+    "@serialport/bindings-interface": "^1.2.2",
     "@serialport/parser-regex": "^10.3.0",
     "debug": "^4.3.4",
     "serialport": "^10.4.0"
