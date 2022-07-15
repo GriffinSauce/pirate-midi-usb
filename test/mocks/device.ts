@@ -34,10 +34,10 @@ export type Device = ReturnType<typeof createDevice>;
 const defaultInitialState: DeviceState = {
   deviceInfo: {
     deviceName: 'Bridge 6',
-  },
+  } as DeviceInfo,
   globalSettings: {
     currentBank: 0,
-  },
+  } as GlobalSettings,
   banks: [],
 };
 
@@ -155,6 +155,7 @@ export const createDevice = ({
     },
     {
       actions: {
+        // @ts-expect-error
         reset: assign(() => initialContext),
         setCommand: assign({
           lastMessageId: (_context, event): number => event.id,
@@ -235,17 +236,25 @@ export const createDevice = ({
   let state = deviceMachine.initialState;
   const send = (rawMessage: string): void => {
     const { id, data } = parseMessage(rawMessage);
-
-    // Transition to new state
-    state = deviceMachine.transition(state, {
+    const event = {
       type: data,
       id,
-    });
+    };
+
+    // Transition to new state
+    state = deviceMachine.transition(state, event);
 
     // Execute side effects
     const { actions } = state;
     actions.forEach(action => {
-      typeof action.exec === 'function' && action.exec();
+      const meta = {
+        action,
+        state,
+        _event: event,
+      };
+      typeof action.exec === 'function' &&
+        // @ts-expect-error
+        action.exec(state.context, event, meta);
     });
 
     // Return response

@@ -102,7 +102,7 @@ export class BaseDevice {
       this.#port.on('data', handleResponse);
 
       debug('out', formattedCommand);
-      void this.#port.write(formattedCommand);
+      void this.#port.write(formattedCommand as string & Buffer);
     });
   }
 
