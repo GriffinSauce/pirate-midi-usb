@@ -1,18 +1,17 @@
 import { getDevices } from '.';
-import * as SerialPortModule from 'serialport';
 import { PirateMidiDevice } from './PirateMidiDevice';
+import * as DevicePortMockModule from '../test/mocks/DevicePortMock';
 import { MockBinding } from '@serialport/binding-mock';
+import { vi } from 'vitest';
 
-jest.mock('serialport', () => {
-  const actual = jest.requireActual('serialport');
-  const { SerialPortMock } = actual;
+vi.mock('./serial/NodeSerialPort', async () => {
+  const { DevicePortMock } = await vi.importActual<typeof DevicePortMockModule>(
+    '../test/mocks/DevicePortMock'
+  );
   return {
-    ...actual,
-    SerialPort: SerialPortMock,
-  } as typeof SerialPortModule;
+    NodeSerialPort: DevicePortMock,
+  };
 });
-
-jest.mock('./PirateMidiDevice');
 
 describe('index', () => {
   describe('getDevices', () => {
@@ -32,7 +31,7 @@ describe('index', () => {
           productId: '5740',
         });
 
-        const devices = await getDevices();
+        const devices = await getDevices({ binding: MockBinding });
 
         expect(devices).toHaveLength(1);
         expect(devices[0]).toBeInstanceOf(PirateMidiDevice);

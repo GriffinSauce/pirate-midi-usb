@@ -37,6 +37,10 @@ export class DevicePortMock extends EventEmitter {
     this.emit('data', response);
   };
 
+  connect(): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve));
+  }
+
   write(buffer: Buffer): boolean {
     const rawData = Buffer.from(buffer).toString();
 

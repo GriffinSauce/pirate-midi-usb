@@ -13,9 +13,9 @@
     "types": [
       "node",
       "w3c-web-serial",
-      "jest"
+      "vitest/globals"
     ]
   },
-  "include": ["src/**/*.ts", "scripts/**/*.ts"],
+  "include": ["src/**/*.ts", "scripts/**/*.ts", "test/**/*.ts"],
   "exclude": ["lib"]
 }

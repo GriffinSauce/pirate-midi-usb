@@ -7,6 +7,8 @@ import { WebSerialPort } from './serial/WebSerialPort';
 import EventEmitter from 'events';
 import { DevicePortMock } from '../test/mocks/DevicePortMock';
 
+type DeviceTypes = keyof typeof deviceDescriptors;
+
 export class PirateMidiDevice extends EventEmitter {
   deviceInfo?: DeviceInfo;
   baseDevice: BaseDevice;
@@ -25,7 +27,7 @@ export class PirateMidiDevice extends EventEmitter {
     });
   }
 
-  getDeviceDescription() {
+  getDeviceDescription(): typeof deviceDescriptors[DeviceTypes] {
     if (!this.deviceInfo) throw new Error('No device info available');
     return deviceDescriptors[this.deviceInfo.deviceModel];
   }

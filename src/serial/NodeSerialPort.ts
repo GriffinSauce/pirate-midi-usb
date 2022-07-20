@@ -8,11 +8,6 @@ import EventEmitter from 'events';
 const DELIMITER = '~';
 
 /**
- * Device manufacturer key, use to filter USB devices
- */
-const MANUFACTURER = 'Pirate MIDI';
-
-/**
  * Maintain node serial port for device
  */
 export class NodeSerialPort extends EventEmitter {
@@ -31,29 +26,11 @@ export class NodeSerialPort extends EventEmitter {
     this.#parser.on('data', data => this.emit('data', data));
   }
 
-  static async list(): Promise<Array<NodeSerialPort>> {
-    // TODO: error handling
-    const portsInfo = await SerialPort.list();
-    return Promise.all(
-      portsInfo
-        .filter(({ manufacturer }) => manufacturer === MANUFACTURER)
-        .map(portInfo => {
-          const port = new SerialPort({
-            path: portInfo.path,
-            baudRate: 9600,
-            autoOpen: false,
-          });
-          return new NodeSerialPort(port);
-        })
-    );
-  }
-
   async connect(): Promise<void> {
-    // Auto open doesn't wait so manually open
-    const error = await new Promise(resolve => {
-      this.#port.open(resolve);
+    // Auto open is async so instead we'll manually open it so we can wait for it
+    return new Promise<void>((resolve, reject) => {
+      this.#port.open(error => (error ? reject(error) : resolve()));
     });
-    if (error) throw error;
   }
 
   write(data: string): void {
