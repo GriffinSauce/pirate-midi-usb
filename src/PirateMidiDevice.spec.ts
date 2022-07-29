@@ -1,6 +1,6 @@
 import { PirateMidiDevice } from './PirateMidiDevice';
 import { bankSettings, deviceInfo, globalSettings } from '../test/fixtures';
-import { DevicePortMock } from '../test/mocks/DevicePortMock';
+import { DevicePortMock } from './mock/DevicePortMock';
 
 describe('PirateMidiDevice', () => {
   let port: DevicePortMock;

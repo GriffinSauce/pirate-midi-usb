@@ -1,6 +1,6 @@
 import { BaseDevice } from './BaseDevice';
 import { deviceInfo, globalSettings } from '../test/fixtures';
-import { DevicePortMock } from '../test/mocks/DevicePortMock';
+import { DevicePortMock } from './mock/DevicePortMock';
 import { Command } from './types';
 
 describe('BaseDevice', () => {
