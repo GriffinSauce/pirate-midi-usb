@@ -2,6 +2,8 @@ import { PirateMidiDevice } from './PirateMidiDevice';
 import { WebSerialPort } from './serial/WebSerialPort';
 import { GetDevices } from './types';
 
+export { getMockDevice } from './mock';
+
 /**
  * Requests access to a Pirate Midi device and return an instance with device info set
  * This always returns a single device wrapped in an array to match the Node API.
