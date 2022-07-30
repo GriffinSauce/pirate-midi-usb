@@ -109,12 +109,19 @@ The mock device is **static**, `set..` and control methods will respond as usual
 
 ### <a id='Debugging'></a>Debugging
 
-Use environment variables to enable logging:
+Debugging is enabled via a [debug](https://github.com/debug-js/debug)-like logger.
 
-- `DEBUG=pmu*` - high level logs
-- `DEBUG=verbose:pmu*` - verbose (large output!)
+In Node, use environment variables to enable logging.
+The logs can be filtered by prefix and wildcards.
 
-The logs can be filtered by keys, like `pmu:runCommand*`, see Debug docs.
+- `DEBUG=pmu:*` - high level logs
+- `DEBUG=pmu-verbose:*` - verbose (large output!) logs
+- `DEBUG=pmu:runCommand` - a specific feature
+- `DEBUG=pmu:runCommand,pmu:sendReceive` - multiple features
+- `DEBUG=pmu*` - all logs from this library
+- `DEBUG=*` - all debug logs (note this may include other libraries in your app)
+
+In the browser, set the same values to `localStorage.debug`.
 
 ## <a id='Examples'></a>Examples
 

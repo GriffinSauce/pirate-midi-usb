@@ -1,14 +1,14 @@
 import { Command, CommandOptions } from './types';
-import Debug from 'debug';
 import Queue from './Queue';
 import { parseMessage } from './utils/parseMessage';
 import { NodeSerialPort } from './serial/NodeSerialPort';
 import { WebSerialPort } from './serial/WebSerialPort';
 import { DevicePortMock } from './mock/DevicePortMock';
+import { createDebug } from './utils/debug';
 
 type PortImplementation = NodeSerialPort | WebSerialPort | DevicePortMock;
 
-const debugVerbose = Debug('verbose:pmu');
+const debugVerbose = createDebug('pmu-verbose');
 
 /**
  * Command timeout
@@ -56,7 +56,7 @@ export class BaseDevice {
    * @returns
    */
   #sendReceive(commandId: number, data: string): Promise<string> {
-    const debug = Debug('pmu:sendReceive');
+    const debug = createDebug('pmu:sendReceive');
     const formattedCommand = `${[commandId, data].join(',')}~`;
 
     return new Promise((_resolve, _reject) => {
@@ -137,7 +137,7 @@ export class BaseDevice {
       );
     this.#busy = true;
 
-    const debug = Debug('pmu:runCommand');
+    const debug = createDebug('pmu:runCommand');
 
     const { args, data } = options;
     const commandId = this.#getCommandId();
