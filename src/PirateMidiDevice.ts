@@ -77,6 +77,9 @@ export class PirateMidiDevice extends EventEmitter {
    * @param profileId - 32-bit hex configuration profile ID
    */
   setProfileId(profileId: string): Promise<string> {
+    if (!profileId)
+      throw new ValidationError('Value is required for profileId');
+
     // TODO: validate input
     return this.baseDevice.queueCommand(Command.DataTransmitRequest, {
       args: ['profileId', profileId],
@@ -84,6 +87,9 @@ export class PirateMidiDevice extends EventEmitter {
   }
 
   setGlobalSettings(globalSettings: Partial<GlobalSettings>): Promise<string> {
+    if (!globalSettings)
+      throw new ValidationError('Value is required for globalSettings');
+
     // TODO: validate input
     return this.baseDevice.queueCommand(Command.DataTransmitRequest, {
       args: ['globalSettings'],
@@ -96,6 +102,9 @@ export class PirateMidiDevice extends EventEmitter {
     bankSettings: Partial<BankSettings>
   ): Promise<string> {
     this.validateBankNumber(bank);
+
+    if (!bankSettings)
+      throw new ValidationError('Value is required for bankSettings');
 
     // TODO: validate data input
 
