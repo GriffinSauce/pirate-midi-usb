@@ -1,4 +1,3 @@
-import { createMachine, assign } from 'xstate';
 import {
   BankSettings,
   Command,
@@ -6,6 +5,22 @@ import {
   GlobalSettings,
 } from '../../src/types';
 import { parseMessage } from '../../src/utils/parseMessage';
+import { Context, createMachine, Definition, State } from './createMachine';
+import {
+  isControl,
+  isDataRequest,
+  isDataTransmitRequest,
+} from '../utils/guards';
+import {
+  reset,
+  setArgs,
+  setArgsResponse,
+  setCommand,
+  setData,
+  setDataResponse,
+  setError,
+  setInitialResponse,
+} from './actions';
 
 export interface DeviceState {
   deviceInfo: DeviceInfo;
@@ -18,18 +33,10 @@ interface Options {
   onResponse?: (response: string) => void;
 }
 
-type Event = { type: Command; id: number } | { type: string; id: number }; // Could be narrowed to accepted args
-
-interface Context {
-  deviceState: DeviceState;
-  lastMessageId?: number;
-  command?: Command;
-  args?: string;
-  data?: string;
-  response?: string;
+export interface Device {
+  state: State;
+  send: (message: string) => void;
 }
-
-export type Device = ReturnType<typeof createDevice>;
 
 const defaultInitialState: DeviceState = {
   deviceInfo: {
@@ -40,20 +47,6 @@ const defaultInitialState: DeviceState = {
   } as GlobalSettings,
   banks: [],
 };
-
-const isCommand = (value: any): value is Command =>
-  Object.values(Command).includes(value as Command);
-
-const isControl = (value: any): value is Command.Control =>
-  (value as Command) === Command.Control;
-
-const isDataRequest = (value: any): value is Command.DataRequest =>
-  (value as Command) === Command.DataRequest;
-
-const isDataTransmitRequest = (
-  value: any
-): value is Command.DataTransmitRequest =>
-  (value as Command) === Command.DataTransmitRequest;
 
 /**
  * A service that emulates device behaviour
@@ -76,164 +69,81 @@ export const createDevice = ({
     data: undefined,
     response: undefined,
   };
-  const deviceMachine = createMachine(
-    {
-      id: 'Pirate Midi Device',
-      initial: 'Initial',
-      context: initialContext,
-      states: {
-        Initial: {
-          entry: ['reset'],
-          exit: ['setCommand', 'setInitialResponse'],
-          on: {
-            [Command.Check]: {
-              target: 'Final',
-            },
-            [Command.Control]: {
-              target: 'AwaitingArgs',
-            },
-            [Command.DataRequest]: {
-              target: 'AwaitingArgs',
-            },
-            [Command.DataTransmitRequest]: {
-              target: 'AwaitingArgs',
-            },
+
+  const definition: Definition = {
+    initial: 'Initial',
+    context: initialContext,
+    states: {
+      Initial: {
+        entry: [reset],
+        exit: [setCommand, setInitialResponse],
+        on: {
+          [Command.Check]: {
+            target: 'Final',
+          },
+          [Command.Control]: {
+            target: 'AwaitingArgs',
+          },
+          [Command.DataRequest]: {
+            target: 'AwaitingArgs',
+          },
+          [Command.DataTransmitRequest]: {
+            target: 'AwaitingArgs',
           },
         },
-        AwaitingArgs: {
-          exit: ['setArgs', 'setArgsResponse'],
-          on: {
-            '*': [
-              {
-                cond: 'isInvalidArgs',
-                target: 'ReturningError',
-              },
-              {
-                cond: 'isDataTransmitRequest',
-                target: 'AwaitingData',
-              },
-              {
-                cond: 'isDataRequest',
-                target: 'Final',
-              },
-              {
-                cond: 'isControl',
-                target: 'Final',
-              },
-            ],
-            [Command.Reset]: {
+      },
+      AwaitingArgs: {
+        exit: [setArgs, setArgsResponse],
+        on: {
+          '*': [
+            {
+              cond: () => false, // TODO: implement check,
+              target: 'ReturningError',
+            },
+            {
+              cond: context => isDataTransmitRequest(context.command),
+              target: 'AwaitingData',
+            },
+            {
+              cond: context => isDataRequest(context.command),
               target: 'Final',
             },
-          },
-        },
-        AwaitingData: {
-          exit: ['setData', 'setDataResponse'],
-          on: {
-            '*': {
+            {
+              cond: context => isControl(context.command),
               target: 'Final',
             },
-          },
-        },
-        ReturningError: {
-          exit: ['setError'],
-          always: {
+          ],
+          [Command.Reset]: {
             target: 'Final',
           },
         },
-        Final: {
-          on: {
-            '*': {
-              target: 'Initial',
-            },
+      },
+      AwaitingData: {
+        exit: [setData, setDataResponse],
+        on: {
+          '*': {
+            target: 'Final',
           },
         },
       },
-      schema: {
-        context: {} as Context,
-        events: {} as Event,
+      ReturningError: {
+        exit: [setError],
+        always: {
+          target: 'Final',
+        },
+      },
+      Final: {
+        on: {
+          '*': {
+            target: 'Initial',
+          },
+        },
       },
     },
-    {
-      actions: {
-        // @ts-expect-error
-        reset: assign(() => initialContext),
-        setCommand: assign({
-          lastMessageId: (_context, event): number => event.id,
-          command: (_context, event) => {
-            if (isCommand(event.type)) return event.type;
-            throw new Error(`unhandled command ${event.type}`);
-          },
-        }),
-        setArgs: assign({
-          lastMessageId: (_context, event): number => event.id,
-          args: (_context, event) => event.type,
-        }),
-        setData: assign({
-          lastMessageId: (_context, event): number => event.id,
-          data: (_context, event) => event.type,
-        }),
-        setInitialResponse: assign({
-          response: context => {
-            // Received a command
-            if (context.command === Command.Check) {
-              return JSON.stringify(context.deviceState.deviceInfo);
-            }
-            return 'ok';
-          },
-        }),
-        setArgsResponse: assign({
-          response: (context, event) => {
-            if (event.type === Command.Reset) {
-              return 'ok';
-            }
+  };
 
-            // Received arguments
-            if (context.command === Command.Control) {
-              // Ignoring arguments because the mock is static
-              return 'ok';
-            }
+  const deviceMachine = createMachine(definition);
 
-            if (context.command === Command.DataTransmitRequest) {
-              return 'ok';
-            }
-
-            if (context.command === Command.DataRequest) {
-              if (context.args === 'globalSettings') {
-                return JSON.stringify(context.deviceState.globalSettings);
-              }
-              if (context.args?.startsWith('bankSettings')) {
-                const [, bank] = context.args.split(',');
-                const bankIndex = parseInt(bank, 10);
-                return JSON.stringify(context.deviceState.banks[bankIndex]);
-              }
-              // TODO: handle all arguments
-              throw new Error(`Unhandled argument ${context.args!}`);
-            }
-          },
-        }),
-        setDataResponse: assign({
-          response: (context, event) => {
-            if (event.type === Command.Reset) {
-              return 'ok';
-            }
-
-            // Received data to transmit
-            // Not actually changing device state (yet), mock is static
-            return 'ok';
-          },
-        }),
-      },
-      guards: {
-        isDataRequest: context => isDataRequest(context.command),
-        isDataTransmitRequest: context =>
-          isDataTransmitRequest(context.command),
-        isControl: context => isControl(context.command),
-        isInvalidArgs: () => false, // TODO: implement check
-      },
-    }
-  );
-
-  let state = deviceMachine.initialState;
   const send = (rawMessage: string): void => {
     const { id, data } = parseMessage(rawMessage);
     const event = {
@@ -242,37 +152,24 @@ export const createDevice = ({
     };
 
     // Transition to new state
-    state = deviceMachine.transition(state, event);
+    deviceMachine.dispatch(event);
 
-    // Execute side effects
-    const { actions } = state;
-    actions.forEach(action => {
-      const meta = {
-        action,
-        state,
-        _event: event,
-      };
-      typeof action.exec === 'function' &&
-        // @ts-expect-error
-        action.exec(state.context, event, meta);
-    });
+    const {
+      value,
+      context: { response, lastMessageId },
+    } = deviceMachine.state;
 
     // Return response
-    const responseStates = ['AwaitingArgs', 'AwaitingData', 'Final'];
-    if (
-      typeof state.context.lastMessageId === 'number' &&
-      state.context.response &&
-      responseStates.find(value => state.matches(value))
-    )
-      onResponse?.(`${state.context.lastMessageId},${state.context.response}~`);
+    const responseStates = new Set(['AwaitingArgs', 'AwaitingData', 'Final']);
+    if (response && responseStates.has(value))
+      onResponse?.(`${lastMessageId!},${response}~`);
 
     // Manually restart
-    if (state.matches('Final'))
-      state = deviceMachine.transition(state, 'restart');
+    if (value === 'Final') deviceMachine.dispatch({ type: 'restart', id: 0 });
   };
 
   return {
-    state,
+    state: deviceMachine.state,
     send,
   };
 };

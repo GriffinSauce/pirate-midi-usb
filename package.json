@@ -27,6 +27,7 @@
   "files": [
     "lib/**/*"
   ],
+  "sideEffects": false,
   "scripts": {
     "examples:intro": "wds --watch --supervise examples/intro.ts",
     "examples:backup": "wds --watch --supervise examples/backup.ts",
@@ -98,10 +99,10 @@
     "prettier": "^2.2.1",
     "rollup": "^2.76.0",
     "rollup-plugin-polyfill-node": "^0.10.1",
+    "rollup-plugin-visualizer": "^5.7.1",
     "semantic-release": "^19.0.2",
     "typescript": "^4.2.4",
-    "wds": "^0.12.0",
-    "xstate": "^4.32.1"
+    "wds": "^0.12.0"
   },
   "config": {
     "commitizen": {

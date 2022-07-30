@@ -3,6 +3,7 @@ import nodePolyfills from 'rollup-plugin-polyfill-node';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 import typescript from '@rollup/plugin-typescript';
 import commonjs from '@rollup/plugin-commonjs';
+import { visualizer } from 'rollup-plugin-visualizer';
 
 const plugins = [
   commonjs({
@@ -13,6 +14,7 @@ const plugins = [
   typescript({
     tsconfig: './tsconfig.build.json',
   }),
+  process.env.ANALYSE_BUNDLE && visualizer(),
 ];
 
 export default [

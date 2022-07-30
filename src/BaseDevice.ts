@@ -4,7 +4,7 @@ import Queue from './Queue';
 import { parseMessage } from './utils/parseMessage';
 import { NodeSerialPort } from './serial/NodeSerialPort';
 import { WebSerialPort } from './serial/WebSerialPort';
-import { DevicePortMock } from '../test/mocks/DevicePortMock';
+import { DevicePortMock } from './mock/DevicePortMock';
 
 type PortImplementation = NodeSerialPort | WebSerialPort | DevicePortMock;
 
