@@ -43,6 +43,8 @@ export const createDebug = (namespace: string): Debug => {
           process.env.DEBUG
         : window.localStorage.getItem('debug');
 
+    if (!debugSetting) return;
+
     const debugNamespaces = debugSetting
       .split(',')
       .map((setting: string) => setting.replace('*', ''));
