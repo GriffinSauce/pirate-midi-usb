@@ -17,7 +17,7 @@
 	* [Use `getDevices` to retrieve available devices](#UsegetDevicestoretrieveavailabledevices)
 	* [Use `PirateMidiDevice` methods to interact with the device](#UsePirateMidiDevicemethodstointeractwiththedevice)
 	* [Managing the connection](#Managingtheconnection)
-	* [Debugging](#Debugging)
+	* [Debugging & testing](#Debugging)
 * [Examples](#Examples)
 * [Thanks](#Thanks)
 
@@ -88,6 +88,24 @@ device.on('connect', () => {
 ```
 > **Note**
 > This behaviour is only implemented for browsers at the moment.
+
+### <a id='Mock'></a>Mock device
+
+To aid in testing or running a demo, a mock device can be created using `getMockDevice`:
+
+```.ts
+// Provide device data to the mock
+const device = await getMockDevice({
+  deviceInfo,
+  globalSettings,
+  bankSettings,
+});
+
+// Methods will behave as if a real device is connected BUT it's state will never change from the data given.
+device.getGlobalSettings()
+```
+
+The mock device is **static**, `set..` and control methods will respond as usual but have no actual effect.
 
 ### <a id='Debugging'></a>Debugging
 
