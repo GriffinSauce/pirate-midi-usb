@@ -1,9 +1,4 @@
-import {
-  BankSettings,
-  Command,
-  DeviceInfo,
-  GlobalSettings,
-} from '../../src/types';
+import { BankSettings, Command, DeviceInfo, GlobalSettings } from '../types';
 
 export interface DeviceState {
   deviceInfo: DeviceInfo;

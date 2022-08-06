@@ -1,11 +1,10 @@
 import picocolors from 'picocolors';
 
-type Color = keyof typeof picocolors;
 type Debug = (msg: string, ...extra: any[]) => void;
 
 let colorIndex = 0;
 
-const colors: Array<Color> = [
+const colors = [
   'yellow',
   'green',
   'blue',
@@ -13,7 +12,9 @@ const colors: Array<Color> = [
   'white',
   'red',
   'cyan',
-];
+] as const;
+
+type Color = typeof colors[number];
 
 const colorMap = new Map<string, Color>();
 
@@ -39,8 +40,7 @@ export const createDebug = (namespace: string): Debug => {
 
     const debugSetting =
       typeof window === 'undefined'
-        ? // @ts-expect-error
-          process.env.DEBUG
+        ? process.env.DEBUG
         : window.localStorage.getItem('debug');
 
     if (!debugSetting) return;

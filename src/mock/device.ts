@@ -1,10 +1,5 @@
-import {
-  BankSettings,
-  Command,
-  DeviceInfo,
-  GlobalSettings,
-} from '../../src/types';
-import { parseMessage } from '../../src/utils/parseMessage';
+import { BankSettings, Command, DeviceInfo, GlobalSettings } from '../types';
+import { parseMessage } from '../utils/parseMessage';
 import { Context, createMachine, Definition, State } from './createMachine';
 import {
   isControl,
