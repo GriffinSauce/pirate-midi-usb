@@ -1,5 +1,5 @@
 import { createDevice, Device, DeviceState } from './device';
-import EventEmitter from 'events';
+import { EventEmitter } from 'events';
 
 export class DevicePortMock extends EventEmitter {
   /**

@@ -4,7 +4,7 @@ import { deviceDescriptors } from './data/deviceDescriptors';
 import { ValidationError } from './ValidationError';
 import { NodeSerialPort } from './serial/NodeSerialPort';
 import { WebSerialPort } from './serial/WebSerialPort';
-import EventEmitter from 'events';
+import { EventEmitter } from 'events';
 import { DevicePortMock } from './mock/DevicePortMock';
 
 export class PirateMidiDevice extends EventEmitter {

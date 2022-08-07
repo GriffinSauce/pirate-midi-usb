@@ -1,5 +1,5 @@
 import { MessageTransformer } from './MessageTransformer';
-import EventEmitter from 'events';
+import { EventEmitter } from 'events';
 
 /**
  * Device vendor id, use to filter USB devices

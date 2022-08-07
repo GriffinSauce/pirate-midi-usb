@@ -1,6 +1,6 @@
 import { SerialPort } from 'serialport';
 import { RegexParser } from '@serialport/parser-regex';
-import EventEmitter from 'events';
+import { EventEmitter } from 'events';
 
 /**
  * Commands and response streams are delimited with ~
