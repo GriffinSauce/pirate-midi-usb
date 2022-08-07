@@ -10,7 +10,6 @@ const plugins = [
     include: /node_modules/,
   }),
   nodeResolve(),
-  nodePolyfills(),
   typescript({
     tsconfig: './tsconfig.build.json',
   }),
@@ -49,7 +48,7 @@ export default [
       exports: 'named',
       sourcemap: true,
     },
-    plugins,
+    plugins: [...plugins, nodePolyfills()],
   },
   // CommonJS build for Browsers
   {
@@ -60,6 +59,6 @@ export default [
       exports: 'named',
       sourcemap: true,
     },
-    plugins,
+    plugins: [...plugins, nodePolyfills()],
   },
 ];
