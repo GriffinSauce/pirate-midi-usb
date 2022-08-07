@@ -101,8 +101,12 @@
     "rollup-plugin-polyfill-node": "^0.10.1",
     "rollup-plugin-visualizer": "^5.7.1",
     "semantic-release": "^19.0.2",
+    "serialport": "^10.4.0",
     "typescript": "^4.2.4",
     "wds": "^0.12.0"
+  },
+  "dependencies": {
+    "@serialport/bindings-cpp": "^10.7.0"
   },
   "config": {
     "commitizen": {
@@ -116,9 +120,5 @@
     "branches": [
       "main"
     ]
-  },
-  "dependencies": {
-    "@serialport/parser-regex": "^10.3.0",
-    "serialport": "^10.4.0"
   }
 }

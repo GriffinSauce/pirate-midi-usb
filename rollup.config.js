@@ -27,6 +27,7 @@ export default [
       sourcemap: true,
     },
     plugins,
+    external: ['@serialport/bindings-cpp'],
   },
   // CommonJS build for Node
   {
@@ -38,6 +39,7 @@ export default [
       sourcemap: true,
     },
     plugins,
+    external: ['@serialport/bindings-cpp'],
   },
   // ES module build for Browsers
   {
