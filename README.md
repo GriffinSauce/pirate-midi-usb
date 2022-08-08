@@ -17,6 +17,7 @@
 	* [Use `getDevices` to retrieve available devices](#UsegetDevicestoretrieveavailabledevices)
 	* [Use `PirateMidiDevice` methods to interact with the device](#UsePirateMidiDevicemethodstointeractwiththedevice)
 	* [Managing the connection](#Managingtheconnection)
+ 	* [Mock device](#Mock)
 	* [Debugging & testing](#Debugging)
 * [Examples](#Examples)
 * [Thanks](#Thanks)
