@@ -5,7 +5,7 @@ import typescript from '@rollup/plugin-typescript';
 import commonjs from '@rollup/plugin-commonjs';
 import { visualizer } from 'rollup-plugin-visualizer';
 
-const basePlugins = [
+const nodePlugins = [
   commonjs({
     include: /node_modules/,
   }),
@@ -16,7 +16,21 @@ const basePlugins = [
   process.env.ANALYSE_BUNDLE && visualizer(),
 ];
 
-const browserPlugins = [...basePlugins, nodePolyfills()];
+const browserPlugins = [
+  commonjs({
+    include: /node_modules/,
+  }),
+  nodePolyfills({
+    include: null,
+  }),
+  nodeResolve({
+    browser: true,
+  }),
+  typescript({
+    tsconfig: './tsconfig.build.json',
+  }),
+  process.env.ANALYSE_BUNDLE && visualizer(),
+];
 
 const nodeExternals = [
   '@serialport/bindings-cpp',
@@ -34,7 +48,7 @@ export default [
       exports: 'named',
       sourcemap: true,
     },
-    plugins: basePlugins,
+    plugins: nodePlugins,
     external: nodeExternals,
   },
   // CommonJS build for Node
@@ -46,7 +60,7 @@ export default [
       exports: 'named',
       sourcemap: true,
     },
-    plugins: basePlugins,
+    plugins: nodePlugins,
     external: nodeExternals,
   },
   // ES module build for Browsers
