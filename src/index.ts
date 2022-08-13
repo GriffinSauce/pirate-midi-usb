@@ -5,6 +5,7 @@ import { GetDevices } from './types';
 export * from './types';
 export { PirateMidiDevice } from './PirateMidiDevice';
 export { ValidationError } from './ValidationError';
+export * from './utils/midiMessage';
 export { getMockDevice } from './mock';
 
 /**

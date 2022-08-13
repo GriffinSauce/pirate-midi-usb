@@ -12,11 +12,13 @@ export interface BaseMessage {
   outputs: EnabledMidiOuts;
 }
 
-export interface ExpMessage extends BaseMessage {
+export interface ExpressionParameters {
   minLimit: number;
   maxLimit: number;
   sweep: 'linear' | 'log' | 'reverseLog';
 }
+
+export interface ExpMessage extends BaseMessage, ExpressionParameters {}
 
 export interface AuxMessages {
   tip: AuxMessageStacks;
