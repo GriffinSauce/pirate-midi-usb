@@ -2,7 +2,8 @@
  * Massive thanks to Pirate MIDI and Kurtis Simpson for sharing their conversion methods
  */
 
-import { MidiMessageType } from './types';
+import { MidiMessageType } from '../types';
+import { isMidiMessageType } from './guards';
 
 // Two arrays allow us to map key<->value in either direction
 const types = [
@@ -36,6 +37,8 @@ export function convertTypeAndChannelToStatusByte(
   type: string,
   channel: number
 ): string {
+  if (!isMidiMessageType(type)) throw new Error(`type "${type}" is not valid`);
+
   const firstHex: string = typeByteValues[types.indexOf(type)];
   const secondHex: string = (channel - 1).toString(16);
 

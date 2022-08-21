@@ -20,7 +20,7 @@
       "./types"
     ],
     "paths": {
-      "*" : ["types/*"]
+      "*" : ["./types/*"]
     }
   },
   "include": ["src/**/*.ts", "scripts/**/*.ts"],

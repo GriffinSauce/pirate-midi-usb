@@ -1,5 +1,6 @@
 import { EnabledMidiOuts } from './EnabledMidiOuts';
-import { AuxMessages, ExpMessage, MessageStack } from './Messages';
+import { RawExpMessage } from './RawMessage';
+import { MessageStack, AuxMessages } from './MessageStack';
 
 // Extend Record to help infer the runCommand type
 export interface GlobalSettings extends Record<string, unknown> {
@@ -21,7 +22,7 @@ export interface GlobalSettings extends Record<string, unknown> {
   flexi2ThruHandles: EnabledMidiOuts;
   midi0ThruHandles: EnabledMidiOuts;
   usbThruHandles: EnabledMidiOuts;
-  expMessages: MessageStack<ExpMessage>[];
+  expMessages: MessageStack<RawExpMessage>[];
   auxMessages: AuxMessages[];
 }
 

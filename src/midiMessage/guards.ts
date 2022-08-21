@@ -1,14 +1,17 @@
-import { BaseMessage, ExpMessage, SmartMessage } from '../types/Messages';
-import { convertStatusByteToType } from './midiHexHelpers';
-import { MidiMessageType } from './types';
+import {
+  RawMessage,
+  RawExpMessage,
+  RawSmartMessage,
+  MidiMessageType,
+} from '../types';
+
+export const isMidiMessageType = (type: string): type is MidiMessageType =>
+  Object.values(MidiMessageType).includes(type as MidiMessageType);
 
 export const isExpressionMidiMessage = (
-  message: BaseMessage | ExpMessage | SmartMessage
-): message is ExpMessage => !!(message as ExpMessage).sweep;
+  message: RawMessage | RawExpMessage | RawSmartMessage
+): message is RawExpMessage => !!(message as RawExpMessage).sweep;
 
 export const isSmartMidiMessage = (
-  message: BaseMessage | ExpMessage | SmartMessage
-): message is SmartMessage => {
-  const type = convertStatusByteToType(message.statusByte);
-  return type === MidiMessageType.SmartMessage;
-};
+  message: RawMessage | RawExpMessage | RawSmartMessage
+): message is RawSmartMessage => message.statusByte === '70';

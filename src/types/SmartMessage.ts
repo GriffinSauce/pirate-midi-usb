@@ -1,5 +1,17 @@
 import { MidiMessageType } from './MidiMessageType';
-import { SmartMessageType } from '../../types/Messages';
+import { SmartMessageType } from './SmartMessageType';
+
+export enum SwitchSide {
+  Primary = 'Primary',
+  Secondary = 'Secondary',
+}
+
+export enum FlexiPart {
+  None = 'None',
+  Tip = 'Tip',
+  Ring = 'Ring',
+  TipRing = 'TipRing',
+}
 
 export interface SmartSwitchMessage {
   type: MidiMessageType.SmartMessage;
@@ -8,7 +20,7 @@ export interface SmartSwitchMessage {
     | SmartMessageType.SwitchOff
     | SmartMessageType.SwitchToggle;
   switchIndex: number;
-  side: 'primary' | 'secondary';
+  side: SwitchSide;
 }
 
 export interface SmartSequentialMessage {
@@ -66,7 +78,7 @@ export interface SmartTrsMessage {
   type: MidiMessageType.SmartMessage;
   smartType: SmartMessageType.TrsSwitchOut | SmartMessageType.TrsPulseOut;
   flexiPort: number;
-  part: 'None' | 'Tip' | 'Ring' | 'TipRing';
+  part: FlexiPart;
 }
 
 export type ParsedSmartMessage =

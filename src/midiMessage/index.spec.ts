@@ -1,12 +1,16 @@
 import { decodeMidiMessage, encodeMidiMessage } from '.';
-import { SmartMessageType } from '../types/Messages';
-import { MidiMessageType } from './types';
-import { SmartSwitchMessage } from './types/SmartMessage';
+import {
+  MidiMessageType,
+  RawMessage,
+  SmartMessageType,
+  SmartSwitchMessage,
+} from '../types';
 
 const encodedMessages = {
   programChange: {
     statusByte: 'c0',
     dataByte1: '00',
+    dataByte2: '00',
     outputs: {
       midi0: true,
       flexi1: true,
@@ -132,7 +136,7 @@ const decodedMessages = {
   smartSwitchToggle: {
     type: 'SmartMessage',
     smartType: 'switchToggle',
-    side: 'primary',
+    side: 'Primary',
     switchIndex: 4,
   },
 };
@@ -166,7 +170,9 @@ describe('MidiMessage', () => {
     });
     describe('smart messages', () => {
       it('should throw for invalid data', () => {
-        expect(() => decodeMidiMessage({ statusByte: '70' })).toThrow();
+        expect(() =>
+          decodeMidiMessage({ statusByte: '70' } as RawMessage)
+        ).toThrow();
       });
       it('should decode a switch toggle message', () => {
         expect(decodeMidiMessage(encodedMessages.smartSwitchToggle)).toEqual(

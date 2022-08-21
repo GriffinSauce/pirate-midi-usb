@@ -1,15 +1,15 @@
 import {
-  BaseMessage,
-  ExpMessage,
-  SmartMessage,
+  RawMessage,
+  RawExpMessage,
+  RawSmartMessage,
   SmartMessageType,
-} from '../types/Messages';
-import {
   MidiMessageType,
   ParsedExpMessage,
   ParsedMessage,
   ParsedSmartMessage,
-} from './types';
+  SwitchSide,
+  FlexiPart,
+} from '../types';
 import {
   convertTypeAndChannelToStatusByte,
   convertStatusByteToType,
@@ -25,11 +25,14 @@ import {
 } from './midiHexHelpers';
 import { isExpressionMidiMessage, isSmartMidiMessage } from './guards';
 
-export function decodeMidiMessage(input: BaseMessage): ParsedMessage;
-export function decodeMidiMessage(input: ExpMessage): ParsedExpMessage;
-export function decodeMidiMessage(input: SmartMessage): ParsedSmartMessage;
+/**
+ * Decodes a raw message from the device into a more usable format with human/device readable properties
+ */
+export function decodeMidiMessage(input: RawMessage): ParsedMessage;
+export function decodeMidiMessage(input: RawExpMessage): ParsedExpMessage;
+export function decodeMidiMessage(input: RawSmartMessage): ParsedSmartMessage;
 export function decodeMidiMessage(
-  message: BaseMessage | ExpMessage | SmartMessage
+  message: RawMessage | RawExpMessage | RawSmartMessage
 ): ParsedMessage | ParsedExpMessage | ParsedSmartMessage {
   if (isSmartMidiMessage(message)) {
     return decodeSmartMessage(message);
@@ -45,7 +48,7 @@ export function decodeMidiMessage(
 }
 
 const decodeBaseMessage = (
-  message: BaseMessage | ExpMessage
+  message: RawMessage | RawExpMessage
 ): ParsedMessage => {
   const type = convertStatusByteToType(message.statusByte);
   const channel = convertStatusByteToChannel(message.statusByte);
@@ -97,7 +100,7 @@ const decodeBaseMessage = (
   }
 };
 
-const decodeSmartMessage = (message: SmartMessage): ParsedSmartMessage => {
+const decodeSmartMessage = (message: RawSmartMessage): ParsedSmartMessage => {
   const { dataByte1, dataByte2 } = message;
 
   // TODO: complete validation
@@ -112,7 +115,9 @@ const decodeSmartMessage = (message: SmartMessage): ParsedSmartMessage => {
         type: MidiMessageType.SmartMessage,
         smartType: message.smartType,
         switchIndex: convertDataByteToNumber(dataByte1),
-        side: ['primary', 'secondary'][convertDataByteToNumber(dataByte2)],
+        side: [SwitchSide.Primary, SwitchSide.Secondary][
+          convertDataByteToNumber(dataByte2)
+        ],
       };
     case SmartMessageType.SequentialResetStep:
     case SmartMessageType.SequentialIncrementStep:
@@ -172,21 +177,27 @@ const decodeSmartMessage = (message: SmartMessage): ParsedSmartMessage => {
         type: MidiMessageType.SmartMessage,
         smartType: message.smartType,
         flexiPort: convertDataByteToNumber(dataByte1),
-        part: ['None', 'Tip', 'Ring', 'TipRing'][
-          convertDataByteToNumber(dataByte2)
-        ],
+        part: [
+          FlexiPart.None,
+          FlexiPart.Tip,
+          FlexiPart.Ring,
+          FlexiPart.TipRing,
+        ][convertDataByteToNumber(dataByte2)],
       };
     default:
       throw new Error('unhandled smart type');
   }
 };
 
-export function encodeMidiMessage(input: ParsedMessage): BaseMessage;
-export function encodeMidiMessage(input: ParsedExpMessage): ExpMessage;
-export function encodeMidiMessage(input: ParsedSmartMessage): SmartMessage;
+/**
+ * Encodes the easy-to-use format back into a raw device message
+ */
+export function encodeMidiMessage(input: ParsedMessage): RawMessage;
+export function encodeMidiMessage(input: ParsedExpMessage): RawExpMessage;
+export function encodeMidiMessage(input: ParsedSmartMessage): RawSmartMessage;
 export function encodeMidiMessage(
   message: ParsedMessage | ParsedExpMessage | ParsedSmartMessage
-): BaseMessage | ExpMessage | SmartMessage {
+): RawMessage | RawExpMessage | RawSmartMessage {
   switch (message.type) {
     case MidiMessageType.ProgramChange:
     case MidiMessageType.ChannelPressure: {
@@ -234,7 +245,7 @@ export function encodeMidiMessage(
   }
 }
 
-const encodeSmartMessage = (message: ParsedSmartMessage): SmartMessage => {
+const encodeSmartMessage = (message: ParsedSmartMessage): RawSmartMessage => {
   const common = { smartType: message.smartType, statusByte: '70' };
 
   switch (message.smartType) {
@@ -245,7 +256,7 @@ const encodeSmartMessage = (message: ParsedSmartMessage): SmartMessage => {
         ...common,
         dataByte1: convertNumberToDataByte(message.switchIndex),
         dataByte2: convertNumberToDataByte(
-          { primary: 0, secondary: 1 }[message.side]
+          { [SwitchSide.Primary]: 0, [SwitchSide.Secondary]: 1 }[message.side]
         ),
       };
     case SmartMessageType.SequentialResetStep:
@@ -301,7 +312,12 @@ const encodeSmartMessage = (message: ParsedSmartMessage): SmartMessage => {
         ...common,
         dataByte1: convertNumberToDataByte(message.flexiPort),
         dataByte2: convertNumberToDataByte(
-          { None: 0, Tip: 1, Ring: 2, TipRing: 3 }[message.part]
+          {
+            [FlexiPart.None]: 0,
+            [FlexiPart.Tip]: 1,
+            [FlexiPart.Ring]: 2,
+            [FlexiPart.TipRing]: 3,
+          }[message.part]
         ),
       };
   }

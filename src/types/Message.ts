@@ -1,5 +1,5 @@
-import { EnabledMidiOuts } from '../../types/EnabledMidiOuts';
-import { ExpressionParameters } from '../../types/Messages';
+import { EnabledMidiOuts } from './EnabledMidiOuts';
+import { ExpressionParameters } from './RawMessage';
 import { MidiMessageType } from './MidiMessageType';
 
 interface Base {

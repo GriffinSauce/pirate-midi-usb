@@ -6,7 +6,6 @@ export * from './types';
 export { PirateMidiDevice } from './PirateMidiDevice';
 export { ValidationError } from './ValidationError';
 export * from './midiMessage';
-export * from './midiMessage/types';
 export { getMockDevice } from './mock';
 
 /**
