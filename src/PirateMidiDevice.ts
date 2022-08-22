@@ -140,6 +140,18 @@ export class PirateMidiDevice extends EventEmitter {
     });
   }
 
+  refreshLeds(): Promise<string> {
+    return this.baseDevice.queueCommand(Command.Control, {
+      args: ['refreshLeds'],
+    });
+  }
+
+  refreshDisplay(): Promise<string> {
+    return this.baseDevice.queueCommand(Command.Control, {
+      args: ['refreshDisplay'],
+    });
+  }
+
   deviceRestart(): Promise<string> {
     return this.baseDevice.queueCommand(Command.Control, {
       args: ['deviceRestart'],
