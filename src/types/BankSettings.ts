@@ -1,4 +1,4 @@
-import { RawExpMessage } from './RawMessage';
+import { RawExpMessage, RawMessage } from './RawMessage';
 import { AuxMessages, MessageStack } from './MessageStack';
 
 // Extend Record to help infer the runCommand type
@@ -52,6 +52,8 @@ export interface Footswitch {
   doublePressMessages: MessageStack;
   holdMessages: MessageStack;
   holdReleaseMessages: MessageStack;
+  sequentialMessages: SequentialMessages;
+  scrollingMessages: ScrollingMessages;
   lfo: Lfo;
 }
 
@@ -66,4 +68,23 @@ interface Lfo {
   resolution: number;
   resetOnStop: boolean;
   clock: number | null;
+}
+
+interface Step {
+  numMessages: number;
+  label: string;
+  color: string; // 24-bit hex
+  messages: RawMessage[];
+}
+
+interface SequentialMessages {
+  numSteps: 0;
+  steps: Step[];
+}
+interface ScrollingMessages {
+  stepInterval: number; // 1-32
+  minScrollLimit: number; // 0-126
+  maxScrollLimit: number; // 1-127
+  numMessages: 0;
+  messages: RawMessage[];
 }
