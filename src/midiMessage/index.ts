@@ -33,6 +33,9 @@ export function decodeMidiMessage(input: RawExpMessage): ParsedExpMessage;
 export function decodeMidiMessage(input: RawSmartMessage): ParsedSmartMessage;
 export function decodeMidiMessage(
   message: RawMessage | RawExpMessage | RawSmartMessage
+): ParsedMessage | ParsedExpMessage | ParsedSmartMessage;
+export function decodeMidiMessage(
+  message: RawMessage | RawExpMessage | RawSmartMessage
 ): ParsedMessage | ParsedExpMessage | ParsedSmartMessage {
   if (isSmartMidiMessage(message)) {
     return decodeSmartMessage(message);
@@ -195,6 +198,9 @@ const decodeSmartMessage = (message: RawSmartMessage): ParsedSmartMessage => {
 export function encodeMidiMessage(input: ParsedMessage): RawMessage;
 export function encodeMidiMessage(input: ParsedExpMessage): RawExpMessage;
 export function encodeMidiMessage(input: ParsedSmartMessage): RawSmartMessage;
+export function encodeMidiMessage(
+  message: ParsedMessage | ParsedExpMessage | ParsedSmartMessage
+): RawMessage | RawExpMessage | RawSmartMessage;
 export function encodeMidiMessage(
   message: ParsedMessage | ParsedExpMessage | ParsedSmartMessage
 ): RawMessage | RawExpMessage | RawSmartMessage {
