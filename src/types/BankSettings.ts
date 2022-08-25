@@ -30,17 +30,10 @@ export interface Footswitch {
   secondaryColor: string;
   primaryLedMode: string;
   secondaryLedMode: string;
-  stepInterval: number;
-  minScrollLimit: number;
-  maxScrollLimit: number;
   sequentialPattern: string;
   sequentialRepeat: string;
   sequentialSendMode: string;
   linkedSwitch: number;
-  numSteps: number;
-  numSequentialMessages: number[];
-  sequentialLabels: string[];
-  sequentialColors: string[];
   currentStep: number;
   midiClock: number | null;
   toggleOnMessages: MessageStack;
