@@ -1,6 +1,6 @@
-import { RawMessage } from './RawMessage';
+import { RawMessage, RawSmartMessage } from './RawMessage';
 
-export interface MessageStack<Message = RawMessage> {
+export interface MessageStack<Message = RawMessage | RawSmartMessage> {
   numMessages: number;
   messages: Message[];
 }
