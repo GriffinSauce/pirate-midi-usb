@@ -252,7 +252,8 @@ export function encodeMidiMessage(
 }
 
 const encodeSmartMessage = (message: ParsedSmartMessage): RawSmartMessage => {
-  const common = { smartType: message.smartType, statusByte: '70' };
+  // As of writing there is a bug when smartType is placed first in the properties
+  const common = { statusByte: '70', smartType: message.smartType };
 
   switch (message.smartType) {
     case SmartMessageType.SwitchOn:
