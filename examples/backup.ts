@@ -16,7 +16,9 @@ void (async () => {
 
   if (!device) throw new Error('No device found');
 
-  console.log(`Backing up ${device.deviceInfo?.deviceName || 'Unknown'}`);
+  const deviceSettings = device.deviceInfo!;
+
+  console.log(`Backing up ${deviceSettings.deviceName || 'Unknown'}`);
 
   const globalSettings = await device.getGlobalSettings();
 
@@ -31,6 +33,7 @@ void (async () => {
   }
 
   const config = {
+    deviceSettings,
     globalSettings,
     bankSettings,
   };
