@@ -37,5 +37,6 @@ void (async () => {
   void device.goToBank(3);
   void device.goToBank(2);
 
-  process.exit(0); // eslint-disable-line no-process-exit
+  // But note that you should not exit without waiting because the device might stay in a waiting state
+  // process.exit(0); // eslint-disable-line no-process-exit
 })();
