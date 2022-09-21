@@ -251,4 +251,8 @@ export class BaseDevice {
       this.runCommand(command, options)
     ) as Promise<string | ResponseData>;
   }
+
+  disconnect(): Promise<void> {
+    return this.#port.close();
+  }
 }

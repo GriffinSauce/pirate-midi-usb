@@ -46,4 +46,8 @@ export class DevicePortMock extends EventEmitter {
 
     return true;
   }
+
+  close(): Promise<void> {
+    return Promise.resolve();
+  }
 }

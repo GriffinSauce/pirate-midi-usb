@@ -175,4 +175,12 @@ export class PirateMidiDevice extends EventEmitter {
       args: ['factoryReset'],
     });
   }
+
+  reset(): Promise<string> {
+    return this.baseDevice.queueCommand(Command.Reset);
+  }
+
+  disconnect(): Promise<void> {
+    return this.baseDevice.disconnect();
+  }
 }

@@ -50,13 +50,24 @@ export class NodeSerialPort extends EventEmitter {
 
   async connect(): Promise<void> {
     // Auto open doesn't wait so manually open
-    const error = await new Promise(resolve => {
-      this.#port.open(resolve);
+    return new Promise((resolve, reject) => {
+      this.#port.open(error => {
+        if (error) return reject(error);
+        resolve();
+      });
     });
-    if (error) throw error;
   }
 
   write(data: string): void {
     this.#port.write(data);
+  }
+
+  async close(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.#port.close(error => {
+        if (error) return reject(error);
+        resolve();
+      });
+    });
   }
 }
