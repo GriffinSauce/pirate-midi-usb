@@ -249,13 +249,30 @@ export class BaseDevice {
   ): Promise<string | ResponseData> {
     const debug = createDebug('pmu:queueCommand');
 
+    const allowRetry = !(
+      command === Command.Control &&
+      options.args &&
+      [
+        'bankUp',
+        'bankDown',
+        'toggleFootswitch',
+        'deviceRestart',
+        'enterBootloader',
+        'factoryReset',
+      ].includes(options.args[0])
+    );
+
     return this.#queue.enqueue(async () => {
       // The API has issues with rapid-fire commands, a single retry appears to be enough to be reliable
       try {
         const response = await this.runCommand(command, options); // DO NOT "simplify" this, we need to await in try
         return response;
       } catch (error) {
-        if (typeof error === 'string' && error.includes('timed out')) {
+        if (
+          allowRetry &&
+          typeof error === 'string' &&
+          error.includes('timed out')
+        ) {
           debug('Command timed out, retrying');
           await this.runCommand(Command.Reset);
           return this.runCommand(command, options);
