@@ -15,7 +15,7 @@ export enum SmartMessageType {
   ScrollingQueueNextStep = 'scrollingQueueNextStep',
   ScrollingQueueStep = 'scrollingQueueStep',
   BankUp = 'bankUp',
-  BankDown = 'bankDown		',
+  BankDown = 'bankDown',
   GoToBank = 'goToBank',
   IncrementExpStep = 'incrementExpStep',
   DecrementExpStep = 'decrementExpStep',
