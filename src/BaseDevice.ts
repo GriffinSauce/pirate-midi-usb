@@ -247,9 +247,22 @@ export class BaseDevice {
     command: Command,
     options: CommandOptions = {}
   ): Promise<string | ResponseData> {
-    return this.#queue.enqueue(() =>
-      this.runCommand(command, options)
-    ) as Promise<string | ResponseData>;
+    const debug = createDebug('pmu:queueCommand');
+
+    return this.#queue.enqueue(async () => {
+      // The API has issues with rapid-fire commands, a single retry appears to be enough to be reliable
+      try {
+        const response = await this.runCommand(command, options); // DO NOT "simplify" this, we need to await in try
+        return response;
+      } catch (error) {
+        if (typeof error === 'string' && error.includes('timed out')) {
+          debug('Command timed out, retrying');
+          await this.runCommand(Command.Reset);
+          return this.runCommand(command, options);
+        }
+        throw error;
+      }
+    }) as Promise<string | ResponseData>;
   }
 
   disconnect(): Promise<void> {
