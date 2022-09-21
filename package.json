@@ -107,7 +107,8 @@
   "dependencies": {
     "@serialport/bindings-cpp": "^10.7.0",
     "@serialport/parser-regex": "^10.3.0",
-    "serialport": "^10.4.0"
+    "serialport": "^10.4.0",
+    "zod": "^3.18.0"
   },
   "config": {
     "commitizen": {

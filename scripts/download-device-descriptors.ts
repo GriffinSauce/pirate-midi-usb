@@ -10,6 +10,8 @@ const outDir = path.join(__dirname, '../src/data');
 const outputPath = path.join(outDir, 'deviceDescriptors.ts');
 
 const banner = `
+import { DeviceDescriptions } from '../types/DeviceDescription';
+
 /**
  * NOTE: this is downloaded and built from source on install, DO NOT modify. 
  * https://github.com/Pirate-MIDI/device-descriptors-api/blob/main/device-descriptors/bridge-descriptors.json
@@ -20,7 +22,7 @@ void (async () => {
   const response = await fetch(url);
   const data = await response.text();
 
-  const content = `${banner}\nexport const deviceDescriptors = ${data}`;
+  const content = `${banner}\nexport const deviceDescriptors: DeviceDescriptions = ${data}`;
 
   const prettierOptions =
     (await prettier.resolveConfig(outputPath)) || undefined;

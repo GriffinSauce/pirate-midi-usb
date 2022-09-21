@@ -1,4 +1,4 @@
-import { BankSettings, Command, DeviceInfo, GlobalSettings } from './types';
+import { Command, DeviceInfo, GlobalSettings } from './types';
 import { BaseDevice } from './BaseDevice';
 import { deviceDescriptors } from './data/deviceDescriptors';
 import { ValidationError } from './ValidationError';
@@ -6,6 +6,12 @@ import { NodeSerialPort } from './serial/NodeSerialPort';
 import { WebSerialPort } from './serial/WebSerialPort';
 import { EventEmitter } from 'events';
 import { DevicePortMock } from './mock/DevicePortMock';
+import { DeviceDescription } from './types/DeviceDescription';
+import {
+  BankSettings,
+  BankSettingsInput,
+  makeBankSettingsSchema,
+} from './schemas/BankSettings';
 
 export class PirateMidiDevice extends EventEmitter {
   deviceInfo?: DeviceInfo;
@@ -25,7 +31,7 @@ export class PirateMidiDevice extends EventEmitter {
     });
   }
 
-  getDeviceDescription() {
+  getDeviceDescription(): DeviceDescription {
     if (!this.deviceInfo) throw new Error('No device info available');
     return deviceDescriptors[this.deviceInfo.deviceModel];
   }
@@ -97,16 +103,12 @@ export class PirateMidiDevice extends EventEmitter {
     });
   }
 
-  setBankSettings(
-    bank: number,
-    bankSettings: Partial<BankSettings>
-  ): Promise<string> {
+  setBankSettings(bank: number, input: BankSettingsInput): Promise<string> {
     this.validateBankNumber(bank);
 
-    if (!bankSettings)
-      throw new ValidationError('Value is required for bankSettings');
-
-    // TODO: validate data input
+    const description = this.getDeviceDescription();
+    const schema = makeBankSettingsSchema(description);
+    const bankSettings = schema.parse(input);
 
     return this.baseDevice.queueCommand(Command.DataTransmitRequest, {
       args: ['bankSettings', String(bank)],
