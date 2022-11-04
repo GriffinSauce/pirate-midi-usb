@@ -97,7 +97,7 @@ export class PirateMidiDevice extends EventEmitter {
     });
   }
 
-  setBankSettings(
+  async setBankSettings(
     bank: number,
     bankSettings: Partial<BankSettings>
   ): Promise<string> {
@@ -108,9 +108,30 @@ export class PirateMidiDevice extends EventEmitter {
 
     // TODO: validate data input
 
+    const { footswitches, ...rest } = bankSettings;
+
+    /**
+     * API overflows when we send the entire bank at once
+     * Send footswitches each in a separate API call to avoid this
+     */
+    if (footswitches) {
+      await Promise.all(
+        footswitches.map((footswitch, index) => {
+          const data = Array(6).fill({});
+          data[index] = footswitch;
+          return this.baseDevice.queueCommand(Command.DataTransmitRequest, {
+            args: ['bankSettings', String(bank)],
+            data: JSON.stringify({
+              footswitches: data,
+            }),
+          });
+        })
+      );
+    }
+
     return this.baseDevice.queueCommand(Command.DataTransmitRequest, {
       args: ['bankSettings', String(bank)],
-      data: JSON.stringify(bankSettings),
+      data: JSON.stringify(rest),
     });
   }
 
