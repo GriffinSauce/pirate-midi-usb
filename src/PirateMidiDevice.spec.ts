@@ -160,20 +160,20 @@ describe('PirateMidiDevice', () => {
         expect(port.receivedMessages.length).toEqual(3);
       });
 
-      it('should throw a validation error for invalid arguments', () => {
-        expect(() =>
+      it.only('should throw a validation error for invalid arguments', async () => {
+        await expect(() =>
           // @ts-expect-error
           device.setBankSettings('test', { bankName: 'Test' })
-        ).toThrowError(/valid/);
+        ).rejects.toThrowError(/valid/);
       });
 
-      it('should throw a validation error when out of range', () => {
-        expect(() =>
+      it('should throw a validation error when out of range', async () => {
+        await expect(() =>
           device.setBankSettings(-1, { bankName: 'Test' })
-        ).toThrowError(/range/);
-        expect(() =>
+        ).rejects.toThrowError(/range/);
+        await expect(() =>
           device.setBankSettings(200, { bankName: 'Test' })
-        ).toThrowError(/range/);
+        ).rejects.toThrowError(/range/);
       });
     });
 

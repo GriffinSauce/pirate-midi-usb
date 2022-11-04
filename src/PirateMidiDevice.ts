@@ -43,9 +43,9 @@ export class PirateMidiDevice extends EventEmitter {
       hardware: { footswitches },
     } = this.getDeviceDescription();
     if (typeof footswitch !== 'number')
-      throw new ValidationError('Not a valid bank number');
+      throw new ValidationError('Not a valid footswitch number');
     if (footswitch < 0 || footswitch > footswitches)
-      throw new ValidationError('Bank number out of range');
+      throw new ValidationError('Footswitch number out of range');
   }
 
   /**
