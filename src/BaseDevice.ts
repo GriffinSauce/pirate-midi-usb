@@ -219,6 +219,11 @@ export class BaseDevice {
 
     debug(`Return response: ${response}`);
     this.#busy = false;
+
+    // We don't know all error codes (yet) so this is rough detection
+    if (/(buffer|overflow|timeout|invalid)/gi.test(response)) {
+      throw new Error(response);
+    }
     return response;
   }
 
