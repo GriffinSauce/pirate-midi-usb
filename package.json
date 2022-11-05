@@ -83,6 +83,7 @@
     "@types/jest": "^28.1.6",
     "@types/node": "^12.20.11",
     "@types/node-fetch": "^2.6.2",
+    "@types/semver": "^7.3.13",
     "@types/w3c-web-serial": "^1.0.2",
     "@typescript-eslint/eslint-plugin": "^4.22.0",
     "@typescript-eslint/parser": "^4.22.0",
@@ -101,6 +102,7 @@
     "rollup-plugin-polyfill-node": "^0.10.1",
     "rollup-plugin-visualizer": "^5.7.1",
     "semantic-release": "^19.0.2",
+    "semver": "^7.3.8",
     "typescript": "^4.2.4",
     "wds": "^0.12.0"
   },

@@ -1,3 +1,4 @@
+import semver from 'semver';
 import { BankSettings, Command, DeviceInfo, GlobalSettings } from './types';
 import { BaseDevice } from './BaseDevice';
 import { deviceDescriptors } from './data/deviceDescriptors';
@@ -6,6 +7,8 @@ import { NodeSerialPort } from './serial/NodeSerialPort';
 import { WebSerialPort } from './serial/WebSerialPort';
 import { EventEmitter } from 'events';
 import { DevicePortMock } from './mock/DevicePortMock';
+
+export const MINIMUM_FIRMWARE_VERSION = '1.1.3';
 
 export class PirateMidiDevice extends EventEmitter {
   deviceInfo?: DeviceInfo;
@@ -28,6 +31,14 @@ export class PirateMidiDevice extends EventEmitter {
   getDeviceDescription() {
     if (!this.deviceInfo) throw new Error('No device info available');
     return deviceDescriptors[this.deviceInfo.deviceModel];
+  }
+
+  getIsSupported(): boolean {
+    if (!this.deviceInfo) throw new Error('No device info available');
+    return semver.gte(
+      this.deviceInfo.firmwareVersion,
+      MINIMUM_FIRMWARE_VERSION
+    );
   }
 
   validateBankNumber(bank: number): void {

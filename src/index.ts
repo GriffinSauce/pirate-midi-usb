@@ -1,4 +1,4 @@
-import { PirateMidiDevice } from './PirateMidiDevice';
+import { MINIMUM_FIRMWARE_VERSION, PirateMidiDevice } from './PirateMidiDevice';
 import { NodeSerialPort } from './serial/NodeSerialPort';
 import { GetDevices } from './types';
 
@@ -23,6 +23,11 @@ export const getDevices: GetDevices = async () => {
 
       // Populate deviceInfo immediately to reduce friction
       await device.updateDeviceInfo();
+
+      if (!device.getIsSupported())
+        throw new Error(
+          `Minimum firmware version ${MINIMUM_FIRMWARE_VERSION} is required`
+        );
 
       return device;
     })
