@@ -24,7 +24,7 @@ describe('index', () => {
       });
     });
 
-    describe('device available', () => {
+    describe.skip('device available', () => {
       it('should return device', async () => {
         MockBinding.createPort('/dev/test', {
           manufacturer: 'Pirate MIDI',
