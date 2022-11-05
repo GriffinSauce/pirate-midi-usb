@@ -4,7 +4,7 @@ import { AuxMessages, MessageStack } from './MessageStack';
 // Extend Record to help infer the runCommand type
 export interface BankSettings extends Record<string, unknown> {
   bankName: string;
-  bankId: string; // 32-bit
+  bankId: number; // 32-bit
   bankMessages: MessageStack;
   expMessages: MessageStack<RawExpMessage>[];
   switchGroups: Array<SwitchGroup[]>;
