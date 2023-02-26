@@ -71,13 +71,13 @@ interface Step {
 }
 
 interface SequentialMessages {
-	numSteps: 0;
+	numSteps: number;
 	steps: Step[];
 }
 interface ScrollingMessages {
 	stepInterval: number; // 1-32
 	minScrollLimit: number; // 0-126
 	maxScrollLimit: number; // 1-127
-	numMessages: 0;
+	numMessages: number;
 	messages: RawMessage[];
 }
