@@ -4,7 +4,7 @@ import path from 'path';
 import prettier from 'prettier';
 
 const url =
-  'https://raw.githubusercontent.com/Pirate-MIDI/device-descriptors-api/main/device-descriptors/bridge-descriptors.json';
+	'https://raw.githubusercontent.com/Pirate-MIDI/device-descriptors-api/main/device-descriptors/bridge-descriptors.json';
 
 const outDir = path.join(__dirname, '../src/data');
 const outputPath = path.join(outDir, 'deviceDescriptors.ts');
@@ -17,17 +17,19 @@ const banner = `
 `.trim();
 
 void (async () => {
-  const response = await fetch(url);
-  const data = await response.text();
+	const response = await fetch(url);
+	const data = await response.text();
 
-  const content = `${banner}\nexport const deviceDescriptors = ${data}`;
+	const content = `${banner}\nexport const deviceDescriptors = ${data}`;
 
-  const prettierOptions =
-    (await prettier.resolveConfig(outputPath)) || undefined;
-  const formattedContent = prettier.format(content, prettierOptions);
+	const prettierOptions =
+		(await prettier.resolveConfig(outputPath)) || undefined;
+	const formattedContent = prettier.format(content, prettierOptions);
 
-  if (!fs.existsSync(outDir)) fs.mkdirSync(outDir);
-  fs.writeFileSync(outputPath, formattedContent);
+	if (!fs.existsSync(outDir)) {
+		fs.mkdirSync(outDir);
+	}
+	fs.writeFileSync(outputPath, formattedContent);
 
-  console.info(`Device descriptors downloaded to ${outputPath}`);
+	console.info(`Device descriptors downloaded to ${outputPath}`);
 })();

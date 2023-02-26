@@ -1,0 +1,25 @@
+{
+  "formatter": {
+    "ignore": [
+      "./lib/**/*",
+      "./coverage/**/*",
+      "./examples/browser/.next/**/*",
+      "./examples/browser/.swc/**/*"
+    ],
+    "indentStyle": "tab"
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "single"
+    }
+  },
+  "linter": {
+    "enabled": true,
+    "ignore": [
+      "./lib/**/*",
+      "./coverage/**/*",
+      "./examples/browser/.next/**/*",
+      "./examples/browser/.swc/**/*"
+    ]
+  }
+}

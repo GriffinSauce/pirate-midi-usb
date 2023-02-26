@@ -6,20 +6,20 @@ import { DeviceState } from './device';
  * Get a mock Pirate Midi device for testing, demo interfaces etc.
  */
 export const getMockDevice = async ({
-  deviceInfo,
-  globalSettings,
-  banks,
+	deviceInfo,
+	globalSettings,
+	banks,
 }: DeviceState): Promise<PirateMidiDevice> => {
-  const port = new DevicePortMock({
-    deviceInfo,
-    globalSettings,
-    banks,
-  });
+	const port = new DevicePortMock({
+		deviceInfo,
+		globalSettings,
+		banks,
+	});
 
-  const device = new PirateMidiDevice(port);
+	const device = new PirateMidiDevice(port);
 
-  // Populate deviceInfo immediately to reduce friction
-  await device.updateDeviceInfo();
+	// Populate deviceInfo immediately to reduce friction
+	await device.updateDeviceInfo();
 
-  return device;
+	return device;
 };

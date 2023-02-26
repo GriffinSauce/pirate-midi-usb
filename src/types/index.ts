@@ -15,4 +15,4 @@ export * from './SmartMessageType';
 /**
  * Default export
  */
-export type GetDevices = () => Promise<Array<PirateMidiDevice>>;
+export type GetDevices = () => Promise<PirateMidiDevice[]>;

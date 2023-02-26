@@ -1,14 +1,14 @@
 export class ValidationError extends Error {
-  constructor(msg: string) {
-    super(msg);
+	constructor(msg: string) {
+		super(msg);
 
-    // Maintains proper stack trace for where our error was thrown (only available on V8)
-    if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, ValidationError);
-    }
+		// Maintains proper stack trace for where our error was thrown (only available on V8)
+		if (Error.captureStackTrace) {
+			Error.captureStackTrace(this, ValidationError);
+		}
 
-    this.name = 'ValidationError';
+		this.name = 'ValidationError';
 
-    Object.setPrototypeOf(this, ValidationError.prototype);
-  }
+		Object.setPrototypeOf(this, ValidationError.prototype);
+	}
 }

@@ -6,83 +6,83 @@ import commonjs from '@rollup/plugin-commonjs';
 import { visualizer } from 'rollup-plugin-visualizer';
 
 const nodePlugins = [
-  commonjs({
-    include: /node_modules/,
-  }),
-  nodeResolve(),
-  typescript({
-    tsconfig: './tsconfig.build.json',
-  }),
-  process.env.ANALYSE_BUNDLE && visualizer(),
+	commonjs({
+		include: /node_modules/,
+	}),
+	nodeResolve(),
+	typescript({
+		tsconfig: './tsconfig.build.json',
+	}),
+	process.env.ANALYSE_BUNDLE && visualizer(),
 ];
 
 const browserPlugins = [
-  commonjs({
-    include: /node_modules/,
-  }),
-  nodePolyfills({
-    include: null,
-  }),
-  nodeResolve({
-    browser: true,
-  }),
-  typescript({
-    tsconfig: './tsconfig.build.json',
-  }),
-  process.env.ANALYSE_BUNDLE && visualizer(),
+	commonjs({
+		include: /node_modules/,
+	}),
+	nodePolyfills({
+		include: null,
+	}),
+	nodeResolve({
+		browser: true,
+	}),
+	typescript({
+		tsconfig: './tsconfig.build.json',
+	}),
+	process.env.ANALYSE_BUNDLE && visualizer(),
 ];
 
 const nodeExternals = [
-  '@serialport/bindings-cpp',
-  '@serialport/parser-regex',
-  'serialport',
+	'@serialport/bindings-cpp',
+	'@serialport/parser-regex',
+	'serialport',
 ];
 
 export default [
-  // ES module build for Node
-  {
-    input: './src/index.ts',
-    output: {
-      file: pkg.module,
-      format: 'esm',
-      exports: 'named',
-      sourcemap: true,
-    },
-    plugins: nodePlugins,
-    external: nodeExternals,
-  },
-  // CommonJS build for Node
-  {
-    input: './src/index.ts',
-    output: {
-      file: pkg.main,
-      format: 'cjs',
-      exports: 'named',
-      sourcemap: true,
-    },
-    plugins: nodePlugins,
-    external: nodeExternals,
-  },
-  // ES module build for Browsers
-  {
-    input: './src/index.browser.ts',
-    output: {
-      file: pkg.browser[pkg.module],
-      format: 'esm',
-      exports: 'named',
-      sourcemap: true,
-    },
-    plugins: browserPlugins,
-  },
-  // CommonJS build for Browsers
-  {
-    input: './src/index.browser.ts',
-    output: {
-      file: pkg.browser[pkg.main],
-      format: 'cjs',
-      exports: 'named',
-      sourcemap: true,
-    },
-    plugins: browserPlugins,
-  },
+	// ES module build for Node
+	{
+		input: './src/index.ts',
+		output: {
+			file: pkg.module,
+			format: 'esm',
+			exports: 'named',
+			sourcemap: true,
+		},
+		plugins: nodePlugins,
+		external: nodeExternals,
+	},
+	// CommonJS build for Node
+	{
+		input: './src/index.ts',
+		output: {
+			file: pkg.main,
+			format: 'cjs',
+			exports: 'named',
+			sourcemap: true,
+		},
+		plugins: nodePlugins,
+		external: nodeExternals,
+	},
+	// ES module build for Browsers
+	{
+		input: './src/index.browser.ts',
+		output: {
+			file: pkg.browser[pkg.module],
+			format: 'esm',
+			exports: 'named',
+			sourcemap: true,
+		},
+		plugins: browserPlugins,
+	},
+	// CommonJS build for Browsers
+	{
+		input: './src/index.browser.ts',
+		output: {
+			file: pkg.browser[pkg.main],
+			format: 'cjs',
+			exports: 'named',
+			sourcemap: true,
+		},
+		plugins: browserPlugins,
+	},
 ];

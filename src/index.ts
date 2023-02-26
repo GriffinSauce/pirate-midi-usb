@@ -12,24 +12,25 @@ export { getMockDevice } from './mock';
  * Get any available Pirate Midi devices with device info set
  */
 export const getDevices: GetDevices = async () => {
-  // TODO: error handling
+	// TODO: error handling
 
-  const ports = await NodeSerialPort.list();
-  return Promise.all(
-    ports.map(async port => {
-      await port.connect();
+	const ports = await NodeSerialPort.list();
+	return Promise.all(
+		ports.map(async (port) => {
+			await port.connect();
 
-      const device = new PirateMidiDevice(port);
+			const device = new PirateMidiDevice(port);
 
-      // Populate deviceInfo immediately to reduce friction
-      await device.updateDeviceInfo();
+			// Populate deviceInfo immediately to reduce friction
+			await device.updateDeviceInfo();
 
-      if (!device.getIsSupported())
-        throw new Error(
-          `Minimum firmware version ${MINIMUM_FIRMWARE_VERSION} is required`
-        );
+			if (!device.getIsSupported()) {
+				throw new Error(
+					`Minimum firmware version ${MINIMUM_FIRMWARE_VERSION} is required`,
+				);
+			}
 
-      return device;
-    })
-  );
+			return device;
+		}),
+	);
 };

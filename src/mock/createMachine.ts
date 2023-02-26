@@ -1,56 +1,56 @@
 import { BankSettings, Command, DeviceInfo, GlobalSettings } from '../types';
 
 export interface DeviceState {
-  deviceInfo: DeviceInfo;
-  globalSettings: GlobalSettings;
-  banks: BankSettings[];
+	deviceInfo: DeviceInfo;
+	globalSettings: GlobalSettings;
+	banks: BankSettings[];
 }
 
 type Event = { type: Command; id: number } | { type: string; id: number }; // Could be narrowed to accepted args
 
 export interface Context {
-  deviceState: DeviceState;
-  lastMessageId?: number;
-  command?: Command;
-  args?: string;
-  data?: string;
-  response?: string;
+	deviceState: DeviceState;
+	lastMessageId?: number;
+	command?: Command;
+	args?: string;
+	data?: string;
+	response?: string;
 }
 
 type Condition = (context: Context, event: Event) => boolean;
 
 interface Transition {
-  cond?: Condition;
-  target: string;
+	cond?: Condition;
+	target: string;
 }
 
 export type Action = (
-  context: Context,
-  event: Event,
-  initialContext: Context
+	context: Context,
+	event: Event,
+	initialContext: Context,
 ) => Context;
 
 interface StateDefinition {
-  entry?: Action[];
-  exit?: Action[];
-  on?: Record<string, Transition | Transition[]>;
-  always?: Transition; // Not yet handled
+	entry?: Action[];
+	exit?: Action[];
+	on?: Record<string, Transition | Transition[]>;
+	always?: Transition; // Not yet handled
 }
 
 export interface Definition {
-  initial: Event['type'];
-  context: Context;
-  states: Record<string, StateDefinition>;
+	initial: Event['type'];
+	context: Context;
+	states: Record<string, StateDefinition>;
 }
 
 export interface State {
-  value: string;
-  context: Context;
+	value: string;
+	context: Context;
 }
 
 interface Machine {
-  state: State;
-  dispatch: (event: Event) => void;
+	state: State;
+	dispatch: (event: Event) => void;
 }
 
 /**
@@ -59,43 +59,46 @@ interface Machine {
  * And Xstate
  */
 export const createMachine = (definition: Definition): Machine => {
-  const machine: Machine = {
-    state: {
-      value: definition.initial,
-      context: definition.context,
-    },
+	const machine: Machine = {
+		state: {
+			value: definition.initial,
+			context: definition.context,
+		},
 
-    dispatch(event) {
-      const currentStateDefinition = definition.states[machine.state.value];
+		dispatch(event) {
+			const currentStateDefinition = definition.states[machine.state.value];
 
-      let transition =
-        currentStateDefinition.on?.[event.type] ||
-        currentStateDefinition.on?.['*'];
+			let transition =
+				currentStateDefinition.on?.[event.type] ||
+				currentStateDefinition.on?.['*'];
 
-      if (Array.isArray(transition))
-        transition = transition.find(({ cond }) =>
-          cond ? cond(machine.state.context, event) : true
-        );
+			if (Array.isArray(transition)) {
+				transition = transition.find(({ cond }) =>
+					cond ? cond(machine.state.context, event) : true,
+				);
+			}
 
-      if (!transition) return;
+			if (!transition) {
+				return;
+			}
 
-      const destinationState = transition.target;
-      const destinationStateDefinition = definition.states[destinationState];
+			const destinationState = transition.target;
+			const destinationStateDefinition = definition.states[destinationState];
 
-      const executeAction = (action: Action) => {
-        machine.state.context = action(
-          machine.state.context,
-          event,
-          definition.context
-        );
-      };
+			const executeAction = (action: Action) => {
+				machine.state.context = action(
+					machine.state.context,
+					event,
+					definition.context,
+				);
+			};
 
-      // Execute side effects
-      currentStateDefinition.exit?.forEach(executeAction);
-      destinationStateDefinition.entry?.forEach(executeAction);
+			// Execute side effects
+			currentStateDefinition.exit?.forEach(executeAction);
+			destinationStateDefinition.entry?.forEach(executeAction);
 
-      machine.state.value = destinationState;
-    },
-  };
-  return machine;
+			machine.state.value = destinationState;
+		},
+	};
+	return machine;
 };
