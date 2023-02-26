@@ -1,7 +1,7 @@
 import fetch from 'node-fetch';
 import fs from 'fs';
 import path from 'path';
-import prettier from 'prettier';
+import { execSync } from 'child_process';
 
 const url =
 	'https://raw.githubusercontent.com/Pirate-MIDI/device-descriptors-api/main/device-descriptors/bridge-descriptors.json';
@@ -20,16 +20,14 @@ void (async () => {
 	const response = await fetch(url);
 	const data = await response.text();
 
-	const content = `${banner}\nexport const deviceDescriptors = ${data}`;
-
-	const prettierOptions =
-		(await prettier.resolveConfig(outputPath)) || undefined;
-	const formattedContent = prettier.format(content, prettierOptions);
+	const content = `${banner}\n     export const deviceDescriptors = ${data}`;
 
 	if (!fs.existsSync(outDir)) {
 		fs.mkdirSync(outDir);
 	}
-	fs.writeFileSync(outputPath, formattedContent);
+	fs.writeFileSync(outputPath, content);
+
+	execSync('npm run format');
 
 	console.info(`Device descriptors downloaded to ${outputPath}`);
 })();
