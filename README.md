@@ -10,6 +10,9 @@
 
 > Easily interact with Pirate Midi devices over USB from JavaScript
 
+> [!WARNING]  
+> The device API will be overhauled in the soon-to-be-released Bridge OS 2.0. This package will **not** work with 2.x until API specs are published and significant changes are made to this package.
+
 <!-- vscode-markdown-toc -->
 * [Install](#Install)
 * [Usage](#Usage)
