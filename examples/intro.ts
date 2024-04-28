@@ -1,5 +1,8 @@
 import { getDevices } from '../src';
 
+const wait = (delay: number) =>
+	new Promise((resolve) => setTimeout(resolve, delay));
+
 /**
  * This is a nice test pad for development that shows how to use a few commands
  */
@@ -40,9 +43,13 @@ void (async () => {
 		await device.setGlobalSettings({ midiChannel: 0 });
 		await device.reset();
 	}
-	// await device.goToBank(4);
-	// await device.goToBank(3);
-	// await device.goToBank(2);
+
+	await wait(1000);
+	await device.goToBank(4);
+	await wait(1000);
+	await device.goToBank(3);
+	await wait(1000);
+	await device.goToBank(2);
 
 	// But note that you should not exit without waiting because the device might stay in a waiting state
 	// process.exit(0); // eslint-disable-line no-process-exit
