@@ -144,12 +144,14 @@ export class BaseDevice {
 		if (args?.length) {
 			// if (response !== 'ok') throw new Error(response);
 
-			const argsJoined = args.join(',');
-			debug(`Send args: ${argsJoined.slice(0, 30)}`);
+			const argsSerialized = args
+				.map((arg) => (typeof arg === 'string' ? arg : JSON.stringify(arg)))
+				.join(',');
+			debug(`Send args: ${argsSerialized.slice(0, 30)}`);
 
 			// Send args
 			try {
-				response = await this.#sendReceive(argsJoined);
+				response = await this.#sendReceive(argsSerialized);
 			} catch (error) {
 				this.#busy = false;
 				throw error;
@@ -241,18 +243,19 @@ export class BaseDevice {
 	): Promise<string | ResponseData> {
 		const debug = createDebug('pmu:queueCommand');
 
-		// TODO: check
 		const allowRetry = !(
-			command === Command.Control &&
-			options.args &&
-			[
-				'bankUp',
-				'bankDown',
-				'toggleFootswitch',
-				'deviceRestart',
-				'enterBootloader',
-				'factoryReset',
-			].includes(options.args[0])
+			(
+				command === Command.Control &&
+				options.args &&
+				[
+					'bankUp',
+					'bankDown',
+					'toggleFootswitch',
+					'deviceRestart',
+					'enterBootloader',
+					'factoryReset',
+				].includes(options.args[0] as string)
+			) // TODO: check & parse out complex commands
 		);
 
 		return this.#queue.enqueue(async () => {

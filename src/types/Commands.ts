@@ -6,4 +6,19 @@ export enum Command {
 	Reset = 'RSET',
 }
 
-export type CommandOptions = { args?: string[]; data?: string };
+type CtrlCommand =
+	| 'bankUp'
+	| 'bankDown'
+	| { goToBank: number }
+	| { toggleFootswitch: number }
+	| 'refreshLeds'
+	| 'refreshDisplay'
+	| 'deviceRestart'
+	| 'enterBootloader'
+	| 'factoryReset';
+
+// TODO: we can probably unwrap `command` into a CommandOptions property
+type CtrlArgs = { command: CtrlCommand[] };
+
+// TODO: this is hella clunky, should be a union of different commands and their data/arguments
+export type CommandOptions = { args?: string[] | [CtrlArgs]; data?: string };
