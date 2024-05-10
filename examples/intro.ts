@@ -1,4 +1,5 @@
 import { getDevices } from '../src';
+import { globalSettings as globalSettingsData } from '../test/fixtures';
 
 const wait = (delay: number) =>
 	new Promise((resolve) => setTimeout(resolve, delay));
@@ -28,8 +29,14 @@ void (async () => {
 	// Some commands might take arguments & don't return any data
 	await device.goToBank(0);
 
+	await device.setBankSettings(0, { bankName: 'Hello' });
+	await device.refreshDisplay();
+	await wait(1000);
+
 	// Send data to the device
-	await device.setGlobalSettings({ midiChannel: 0 });
+	// TODO: we're sending a complete object here as a workaround, sending a partial borks the device
+	await device.setGlobalSettings({ ...globalSettingsData, midiChannel: 0 });
+	await wait(1000);
 
 	// And read it
 	const globalSettings = await device.getGlobalSettings();
@@ -39,18 +46,9 @@ void (async () => {
 	for (var i = 0; i < 3; i++) {
 		console.log(`Going to bank${i}`);
 		await device.goToBank(i);
-		await new Promise((resolve) => setTimeout(resolve, 5000));
-		await device.setGlobalSettings({ midiChannel: 0 });
-		await device.reset();
+		await wait(1000);
 	}
 
-	await wait(1000);
-	await device.goToBank(4);
-	await wait(1000);
-	await device.goToBank(3);
-	await wait(1000);
-	await device.goToBank(2);
-
 	// But note that you should not exit without waiting because the device might stay in a waiting state
-	// process.exit(0); // eslint-disable-line no-process-exit
+	process.exit(0); // eslint-disable-line no-process-exit
 })();
