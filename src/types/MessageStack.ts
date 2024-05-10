@@ -14,4 +14,6 @@ export interface AuxMessages {
 export interface AuxMessageStacks {
 	pressMessages: MessageStack;
 	holdMessages: MessageStack;
+	toggleOnMessages: MessageStack;
+	toggleOffMessages: MessageStack;
 }

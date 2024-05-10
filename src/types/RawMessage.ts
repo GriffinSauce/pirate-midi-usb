@@ -8,16 +8,16 @@ export interface ExpressionParameters {
 }
 
 export interface RawMessage {
-	statusByte: string; // 8-bit hex
-	dataByte1: string; // 8-bit hex
-	dataByte2?: string; // 8-bit hex
+	statusByte: number;
+	dataByte1: number;
+	dataByte2?: number;
 	outputs: EnabledMidiOuts;
 }
 
 export interface RawSmartMessage {
-	statusByte: string; // 8-bit hex
-	dataByte1: string; // 8-bit hex
-	dataByte2?: string; // 8-bit hex
+	statusByte: number;
+	dataByte1: number;
+	dataByte2?: number;
 	smartType: SmartMessageType;
 }
 

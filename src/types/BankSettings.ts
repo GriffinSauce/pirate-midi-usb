@@ -26,8 +26,8 @@ export interface Footswitch {
 	secondaryState: boolean;
 	primaryMode: string;
 	secondaryMode: string;
-	primaryColor: string;
-	secondaryColor: string;
+	primaryColor: number;
+	secondaryColor: number;
 	primaryLedMode: string;
 	secondaryLedMode: string;
 	sequentialPattern: string;
