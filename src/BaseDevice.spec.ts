@@ -20,13 +20,13 @@ describe('BaseDevice', () => {
 		it('should send correct messages for a Check command', async () => {
 			// @ts-expect-error - using protected method
 			await baseDevice.runCommand(Command.Check);
-			expect(port.sentMessages).toEqual(['1,CHCK~']);
+			expect(port.sentMessages).toEqual(['CHCK~']);
 		});
 
 		it('should send correct messages for a Control command', async () => {
 			// @ts-expect-error - using protected method
 			await baseDevice.runCommand(Command.Control, { args: ['bankUp'] });
-			expect(port.sentMessages).toEqual(['1,CTRL~', '2,bankUp~']);
+			expect(port.sentMessages).toEqual(['CTRL~', 'bankUp~']);
 		});
 
 		it('should send correct messages for a DataRequest command', async () => {
@@ -34,7 +34,7 @@ describe('BaseDevice', () => {
 			await baseDevice.runCommand(Command.DataRequest, {
 				args: ['globalSettings'],
 			});
-			expect(port.sentMessages).toEqual(['1,DREQ~', '2,globalSettings~']);
+			expect(port.sentMessages).toEqual(['DREQ~', 'globalSettings~']);
 		});
 
 		it('should send correct messages for a DataTransmit command', async () => {
@@ -44,18 +44,18 @@ describe('BaseDevice', () => {
 				data: '{"midiChannel":1}',
 			});
 			expect(port.sentMessages).toEqual([
-				'1,DTXR~',
-				'2,globalSettings~',
-				'3,{"midiChannel":1}~',
+				'DTXR~',
+				'globalSettings~',
+				'{"midiChannel":1}~',
 			]);
 		});
 
 		it('should send correct messages for a Reset command', async () => {
-			port.device.send('0,CTRL~'); // Put device in waiting state
+			port.device.send('CTRL~'); // Put device in waiting state
 
 			// @ts-expect-error - using protected method
 			await baseDevice.runCommand(Command.Reset);
-			expect(port.sentMessages).toEqual(['1,RSET~']);
+			expect(port.sentMessages).toEqual(['RSET~']);
 		});
 	});
 
@@ -71,7 +71,7 @@ describe('BaseDevice', () => {
 				baseDevice.queueCommand(Command.Check),
 			]);
 
-			expect(port.sentMessages).toEqual(['1,CTRL~', '2,bankUp~', '3,CHCK~']);
+			expect(port.sentMessages).toEqual(['CTRL~', 'bankUp~', 'CHCK~']);
 		});
 	});
 });
