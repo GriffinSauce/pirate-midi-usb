@@ -6,11 +6,10 @@ export interface DeviceState {
 	banks: BankSettings[];
 }
 
-type Event = { type: Command; id: number } | { type: string; id: number }; // Could be narrowed to accepted args
+type Event = { type: Command } | { type: string }; // Could be narrowed to accepted args
 
 export interface Context {
 	deviceState: DeviceState;
-	lastMessageId?: number;
 	command?: Command;
 	args?: string;
 	data?: string;

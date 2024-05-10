@@ -24,9 +24,6 @@ const COMMANDS_RECEIVING_DATA = [Command.Check, Command.DataRequest];
  * Encapsulates the serial protocol, exposing only simple runCommand and queueCommand methods
  */
 export class BaseDevice {
-	// Increment index for command ids
-	#commandIndex = 0;
-
 	/**
 	 * We can only run one multi-part command at one time.
 	 * Consumers should queue commands externally or use queueCommand
@@ -43,21 +40,13 @@ export class BaseDevice {
 	}
 
 	/**
-	 * Every command should have a unique id, keep a private incrementing counter
-	 */
-	#getCommandId(): number {
-		return (this.#commandIndex += 1);
-	}
-
-	/**
 	 * Sends data to the device and returns a promise with returned data
-	 * @param {Int} commandId - a command id to tie together command- and data transfers
 	 * @param {String} data - data to send
 	 * @returns
 	 */
-	#sendReceive(commandId: number, data: string): Promise<string> {
+	#sendReceive(data: string): Promise<string> {
 		const debug = createDebug('pmu:sendReceive');
-		const formattedCommand = `${[commandId, data].join(',')}~`;
+		const formattedCommand = `${data}~`;
 
 		return new Promise((_resolve, _reject) => {
 			const timeout = setTimeout(() => {
@@ -87,11 +76,7 @@ export class BaseDevice {
 			const handleResponse = (rawData: string) => {
 				debug('in', rawData);
 				try {
-					const { id, data } = parseMessage(rawData);
-					if (id !== commandId) {
-						return;
-					}
-					return resolve(data);
+					return resolve(parseMessage(rawData));
 				} catch (error: unknown) {
 					if (error instanceof Error) {
 						return reject(error.message);
@@ -143,13 +128,12 @@ export class BaseDevice {
 		const debug = createDebug('pmu:runCommand');
 
 		const { args, data } = options;
-		const commandId = this.#getCommandId();
 
 		debug(`Send command: ${command}`);
 
 		let response;
 		try {
-			response = await this.#sendReceive(commandId, command);
+			response = await this.#sendReceive(command);
 		} catch (error) {
 			this.#busy = false;
 			throw error;
@@ -164,9 +148,8 @@ export class BaseDevice {
 			debug(`Send args: ${argsJoined.slice(0, 30)}`);
 
 			// Send args
-			const argCommandId = this.#getCommandId();
 			try {
-				response = await this.#sendReceive(argCommandId, argsJoined);
+				response = await this.#sendReceive(argsJoined);
 			} catch (error) {
 				this.#busy = false;
 				throw error;
@@ -185,9 +168,8 @@ export class BaseDevice {
 
 			// if (response !== 'ok') throw new Error(response);
 
-			const dataCommandId = this.#getCommandId();
 			try {
-				response = await this.#sendReceive(dataCommandId, data);
+				response = await this.#sendReceive(data);
 			} catch (error) {
 				this.#busy = false;
 				throw error;
@@ -259,6 +241,7 @@ export class BaseDevice {
 	): Promise<string | ResponseData> {
 		const debug = createDebug('pmu:queueCommand');
 
+		// TODO: check
 		const allowRetry = !(
 			command === Command.Control &&
 			options.args &&
@@ -284,7 +267,7 @@ export class BaseDevice {
 					error.includes('timed out')
 				) {
 					debug('Command timed out, retrying');
-					await this.runCommand(Command.Reset);
+					// await this.runCommand(Command.Reset);
 					return this.runCommand(command, options);
 				}
 				throw error;
