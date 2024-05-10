@@ -1,4 +1,5 @@
 import { decodeMidiMessage, encodeMidiMessage } from '.';
+import { SMART_MESSAGE_STATUS_BYTE } from '../constants';
 import {
 	MidiMessageType,
 	RawMessage,
@@ -8,9 +9,9 @@ import {
 
 const encodedMessages = {
 	programChange: {
-		statusByte: 'c0',
-		dataByte1: '00',
-		dataByte2: '00',
+		statusByte: 192,
+		dataByte1: 0,
+		dataByte2: 0,
 		outputs: {
 			midi0: true,
 			flexi1: true,
@@ -19,9 +20,9 @@ const encodedMessages = {
 		},
 	},
 	controlChange: {
-		statusByte: 'b0',
-		dataByte1: '00',
-		dataByte2: '7f',
+		statusByte: 176,
+		dataByte1: 0,
+		dataByte2: 127,
 		outputs: {
 			midi0: true,
 			flexi1: false,
@@ -30,9 +31,9 @@ const encodedMessages = {
 		},
 	},
 	noteOn: {
-		statusByte: '90',
-		dataByte1: '40',
-		dataByte2: '40',
+		statusByte: 144,
+		dataByte1: 76,
+		dataByte2: 64,
 		outputs: {
 			midi0: true,
 			flexi1: true,
@@ -41,9 +42,9 @@ const encodedMessages = {
 		},
 	},
 	noteOff: {
-		statusByte: '80',
-		dataByte1: '43',
-		dataByte2: '40',
+		statusByte: 128,
+		dataByte1: 79,
+		dataByte2: 64,
 		outputs: {
 			midi0: true,
 			flexi1: true,
@@ -52,9 +53,9 @@ const encodedMessages = {
 		},
 	},
 	pitchBend: {
-		statusByte: 'e0',
-		dataByte1: '0',
-		dataByte2: '60',
+		statusByte: 224,
+		dataByte1: 0,
+		dataByte2: 96,
 		outputs: {
 			midi0: false,
 			flexi1: false,
@@ -63,10 +64,10 @@ const encodedMessages = {
 		},
 	},
 	smartSwitchToggle: {
+		statusByte: 112,
 		smartType: 'switchToggle' as SmartMessageType.SwitchToggle,
-		statusByte: '70',
-		dataByte1: '04',
-		dataByte2: '00',
+		dataByte1: 4,
+		dataByte2: 0,
 	},
 };
 
@@ -124,7 +125,7 @@ const decodedMessages = {
 		type: 'PitchBend' as MidiMessageType.PitchBend,
 		channel: 1,
 		note: 'C',
-		octave: -1,
+		octave: -2,
 		pitch: 50,
 		outputs: {
 			midi0: false,
@@ -171,7 +172,9 @@ describe('MidiMessage', () => {
 		describe('smart messages', () => {
 			it('should throw for invalid data', () => {
 				expect(() =>
-					decodeMidiMessage({ statusByte: '70' } as RawMessage),
+					decodeMidiMessage({
+						statusByte: SMART_MESSAGE_STATUS_BYTE,
+					} as RawMessage),
 				).toThrow();
 			});
 			it('should decode a switch toggle message', () => {

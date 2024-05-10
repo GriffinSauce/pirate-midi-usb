@@ -158,12 +158,14 @@ export class PirateMidiDevice extends EventEmitter {
 	}
 
 	bankUp(): Promise<string> {
-		return this.baseDevice.queueCommand(Command.Control, { args: ['bankUp'] });
+		return this.baseDevice.queueCommand(Command.Control, {
+			args: [{ command: ['bankUp'] }],
+		});
 	}
 
 	bankDown(): Promise<string> {
 		return this.baseDevice.queueCommand(Command.Control, {
-			args: ['bankDown'],
+			args: [{ command: ['bankDown'] }],
 		});
 	}
 
@@ -171,7 +173,7 @@ export class PirateMidiDevice extends EventEmitter {
 		this.validateBankNumber(bank);
 
 		return this.baseDevice.queueCommand(Command.Control, {
-			args: ['goToBank', String(bank)],
+			args: [{ command: [{ goToBank: bank }] }],
 		});
 	}
 
@@ -179,31 +181,31 @@ export class PirateMidiDevice extends EventEmitter {
 		this.validateFootswitchNumber(footswitch);
 
 		return this.baseDevice.queueCommand(Command.Control, {
-			args: ['toggleFootswitch', String(footswitch)],
+			args: [{ command: [{ toggleFootswitch: footswitch }] }],
 		});
 	}
 
 	refreshLeds(): Promise<string> {
 		return this.baseDevice.queueCommand(Command.Control, {
-			args: ['refreshLeds'],
+			args: [{ command: ['refreshLeds'] }],
 		});
 	}
 
 	refreshDisplay(): Promise<string> {
 		return this.baseDevice.queueCommand(Command.Control, {
-			args: ['refreshDisplay'],
+			args: [{ command: ['refreshDisplay'] }],
 		});
 	}
 
 	deviceRestart(): Promise<string> {
 		return this.baseDevice.queueCommand(Command.Control, {
-			args: ['deviceRestart'],
+			args: [{ command: ['deviceRestart'] }],
 		});
 	}
 
 	enterBootloader(): Promise<string> {
 		return this.baseDevice.queueCommand(Command.Control, {
-			args: ['enterBootloader'],
+			args: [{ command: ['enterBootloader'] }],
 		});
 	}
 
@@ -216,7 +218,7 @@ export class PirateMidiDevice extends EventEmitter {
 		}
 
 		return this.baseDevice.queueCommand(Command.Control, {
-			args: ['factoryReset'],
+			args: [{ command: ['factoryReset'] }],
 		});
 	}
 
