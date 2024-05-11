@@ -100,7 +100,7 @@
     "rollup-plugin-polyfill-node": "^0.10.1",
     "rollup-plugin-visualizer": "^5.7.1",
     "rome": "^11.0.0",
-    "semantic-release": "^19.0.2",
+    "semantic-release": "^23.1.1",
     "semver": "^7.3.8",
     "typescript": "^4.9.5",
     "wds": "^0.12.0"
