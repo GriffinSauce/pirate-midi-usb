@@ -120,7 +120,8 @@
   },
   "release": {
     "branches": [
-      "main"
+      "main",
+      "next"
     ]
   }
 }
