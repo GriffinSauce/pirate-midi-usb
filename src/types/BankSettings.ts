@@ -66,7 +66,7 @@ interface Lfo {
 interface Step {
 	numMessages: number;
 	label: string;
-	color: string; // 24-bit hex
+	color: number;
 	messages: RawMessage[];
 }
 
