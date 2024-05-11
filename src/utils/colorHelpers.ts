@@ -4,10 +4,8 @@ export function convertColorDecimalToHexString(colorDecimal: number): string {
 		: `#${colorDecimal.toString(16).padStart(6, '0')}`;
 }
 
-export function convertColorHexStringToDecimal(
-	colorHex: string,
-): number | null {
+export function convertColorHexStringToDecimal(colorHex: string): number {
 	return null != colorHex && colorHex.startsWith('#')
 		? parseInt(colorHex.replace('#', ''), 16)
-		: null;
+		: 0;
 }
