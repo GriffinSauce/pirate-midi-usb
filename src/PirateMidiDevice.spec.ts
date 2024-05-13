@@ -70,8 +70,8 @@ describe('PirateMidiDevice', () => {
 		});
 
 		describe('getBankSettings', () => {
-			const bank0 = { ...bankSettings, bankId: '0' };
-			const bank1 = { ...bankSettings, bankId: '1' };
+			const bank0 = { ...bankSettings, bankId: 0 };
+			const bank1 = { ...bankSettings, bankId: 1 };
 
 			beforeEach(async () => {
 				port = new DevicePortMock({
