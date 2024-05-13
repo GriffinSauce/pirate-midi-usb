@@ -19,43 +19,48 @@ describe('BaseDevice', () => {
 	describe('command composition', () => {
 		it('should send correct messages for a Check command', async () => {
 			// @ts-expect-error - using protected method
-			await baseDevice.runCommand(Command.Check);
-			expect(port.sentMessages).toEqual(['1,CHCK~']);
+			await baseDevice.runCommand({ command: Command.Check });
+			expect(port.sentMessages).toEqual(['CHCK~']);
 		});
 
 		it('should send correct messages for a Control command', async () => {
 			// @ts-expect-error - using protected method
-			await baseDevice.runCommand(Command.Control, { args: ['bankUp'] });
-			expect(port.sentMessages).toEqual(['1,CTRL~', '2,bankUp~']);
+			await baseDevice.runCommand({
+				command: Command.Control,
+				controlCommands: ['bankUp'],
+			});
+			expect(port.sentMessages).toEqual(['CTRL~', '{"command":["bankUp"]}~']);
 		});
 
 		it('should send correct messages for a DataRequest command', async () => {
 			// @ts-expect-error - using protected method
-			await baseDevice.runCommand(Command.DataRequest, {
+			await baseDevice.runCommand({
+				command: Command.DataRequest,
 				args: ['globalSettings'],
 			});
-			expect(port.sentMessages).toEqual(['1,DREQ~', '2,globalSettings~']);
+			expect(port.sentMessages).toEqual(['DREQ~', 'globalSettings~']);
 		});
 
 		it('should send correct messages for a DataTransmit command', async () => {
 			// @ts-expect-error - using protected method
-			await baseDevice.runCommand(Command.DataTransmitRequest, {
+			await baseDevice.runCommand({
+				command: Command.DataTransmitRequest,
 				args: ['globalSettings'],
 				data: '{"midiChannel":1}',
 			});
 			expect(port.sentMessages).toEqual([
-				'1,DTXR~',
-				'2,globalSettings~',
-				'3,{"midiChannel":1}~',
+				'DTXR~',
+				'globalSettings~',
+				'{"midiChannel":1}~',
 			]);
 		});
 
 		it('should send correct messages for a Reset command', async () => {
-			port.device.send('0,CTRL~'); // Put device in waiting state
+			port.device.send('CTRL~'); // Put device in waiting state
 
 			// @ts-expect-error - using protected method
-			await baseDevice.runCommand(Command.Reset);
-			expect(port.sentMessages).toEqual(['1,RSET~']);
+			await baseDevice.runCommand({ command: Command.Reset });
+			expect(port.sentMessages).toEqual(['RSET~']);
 		});
 	});
 
@@ -63,15 +68,18 @@ describe('BaseDevice', () => {
 		it('should queue commands and execute them in order', async () => {
 			// Promise.all will execute all immediately, this causes sequencing issues without queueing
 			await Promise.all([
-				// @ts-expect-error - using protected method
-				baseDevice.queueCommand(Command.Control, {
-					args: ['bankUp'],
+				baseDevice.queueCommand({
+					command: Command.Control,
+					controlCommands: ['bankUp'],
 				}),
-				// @ts-expect-error - using protected method
-				baseDevice.queueCommand(Command.Check),
+				baseDevice.queueCommand({ command: Command.Check }),
 			]);
 
-			expect(port.sentMessages).toEqual(['1,CTRL~', '2,bankUp~', '3,CHCK~']);
+			expect(port.sentMessages).toEqual([
+				'CTRL~',
+				'{"command":["bankUp"]}~',
+				'CHCK~',
+			]);
 		});
 	});
 });

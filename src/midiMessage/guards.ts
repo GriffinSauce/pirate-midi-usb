@@ -1,3 +1,4 @@
+import { SMART_MESSAGE_STATUS_BYTE } from '../constants';
 import {
 	RawMessage,
 	RawExpMessage,
@@ -14,4 +15,5 @@ export const isExpressionMidiMessage = (
 
 export const isSmartMidiMessage = (
 	message: RawMessage | RawExpMessage | RawSmartMessage,
-): message is RawSmartMessage => message.statusByte === '70';
+): message is RawSmartMessage =>
+	message.statusByte === SMART_MESSAGE_STATUS_BYTE;

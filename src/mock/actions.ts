@@ -11,20 +11,17 @@ export const setCommand: Action = (context, event) => {
 
 	return {
 		...context,
-		lastMessageId: event.id,
 		command: event.type,
 	};
 };
 
 export const setArgs: Action = (context, event) => ({
 	...context,
-	lastMessageId: event.id,
 	args: event.type,
 });
 
 export const setData: Action = (context, event) => ({
 	...context,
-	lastMessageId: event.id,
 	data: event.type,
 });
 

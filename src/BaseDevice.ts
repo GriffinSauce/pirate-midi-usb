@@ -1,4 +1,10 @@
-import { Command, CommandOptions } from './types';
+import {
+	Command,
+	CommandOptions,
+	CommandOptionsControl,
+	CommandOptionsDataTransmit,
+	CommandOptionsWithArgs,
+} from './types';
 import Queue from './Queue';
 import { parseMessage } from './utils/parseMessage';
 import { NodeSerialPort } from './serial/NodeSerialPort';
@@ -9,6 +15,20 @@ import { createDebug } from './utils/debug';
 type PortImplementation = NodeSerialPort | WebSerialPort | DevicePortMock;
 
 const debugVerbose = createDebug('pmu-verbose');
+
+const isControlCommand = (
+	options: CommandOptions,
+): options is CommandOptionsControl => options.command === Command.Control;
+
+const hasArguments = (
+	options: CommandOptions,
+): options is CommandOptionsWithArgs =>
+	!!(options as CommandOptionsWithArgs).args;
+
+const hasData = (
+	options: CommandOptions,
+): options is CommandOptionsDataTransmit =>
+	!!(options as CommandOptionsDataTransmit).data;
 
 /**
  * Command timeout
@@ -24,9 +44,6 @@ const COMMANDS_RECEIVING_DATA = [Command.Check, Command.DataRequest];
  * Encapsulates the serial protocol, exposing only simple runCommand and queueCommand methods
  */
 export class BaseDevice {
-	// Increment index for command ids
-	#commandIndex = 0;
-
 	/**
 	 * We can only run one multi-part command at one time.
 	 * Consumers should queue commands externally or use queueCommand
@@ -43,21 +60,13 @@ export class BaseDevice {
 	}
 
 	/**
-	 * Every command should have a unique id, keep a private incrementing counter
-	 */
-	#getCommandId(): number {
-		return (this.#commandIndex += 1);
-	}
-
-	/**
 	 * Sends data to the device and returns a promise with returned data
-	 * @param {Int} commandId - a command id to tie together command- and data transfers
 	 * @param {String} data - data to send
 	 * @returns
 	 */
-	#sendReceive(commandId: number, data: string): Promise<string> {
+	#sendReceive(data: string): Promise<string> {
 		const debug = createDebug('pmu:sendReceive');
-		const formattedCommand = `${[commandId, data].join(',')}~`;
+		const formattedCommand = `${data}~`;
 
 		return new Promise((_resolve, _reject) => {
 			const timeout = setTimeout(() => {
@@ -87,11 +96,7 @@ export class BaseDevice {
 			const handleResponse = (rawData: string) => {
 				debug('in', rawData);
 				try {
-					const { id, data } = parseMessage(rawData);
-					if (id !== commandId) {
-						return;
-					}
-					return resolve(data);
+					return resolve(parseMessage(rawData));
 				} catch (error: unknown) {
 					if (error instanceof Error) {
 						return reject(error.message);
@@ -110,28 +115,23 @@ export class BaseDevice {
 
 	/**
 	 * Send a command, optionally with arguments and return response data (if any)
-	 * @param {Command} command - a command string like CHCK
-	 * @param  {CommandOptions} options
-	 * @param  {String[]} options.args - any arguments for the command
-	 * @param  {String} options.data - any (stringified) data to transmit (only valid for data transmit commands)
+	 * @param  {CommandOptions} commandOptions - command and options
 	 * @returns
 	 */
 
+	// TODO: union overloads for the correct commands
 	// Overload without response data
 	protected async runCommand(
-		command: Command,
-		options?: CommandOptions | undefined,
+		commandOptions: CommandOptions | undefined,
 	): Promise<string>;
 
 	// Overload with response data
-	protected async runCommand<ResponseData extends Record<string, unknown>>(
-		command: Command,
-		options?: CommandOptions | undefined,
-	): Promise<ResponseData>;
+	// protected async runCommand<ResponseData extends Record<string, unknown>>(
+	// 	commandOptions: CommandOptions | undefined,
+	// ): Promise<ResponseData>;
 
 	protected async runCommand<ResponseData extends Record<string, unknown>>(
-		command: Command,
-		options: CommandOptions = {},
+		commandOptions: CommandOptions,
 	): Promise<string | ResponseData> {
 		if (this.#busy) {
 			throw new Error(
@@ -142,57 +142,66 @@ export class BaseDevice {
 
 		const debug = createDebug('pmu:runCommand');
 
-		const { args, data } = options;
-		const commandId = this.#getCommandId();
+		const { command } = commandOptions;
 
 		debug(`Send command: ${command}`);
 
 		let response;
 		try {
-			response = await this.#sendReceive(commandId, command);
+			response = await this.#sendReceive(command);
 		} catch (error) {
 			this.#busy = false;
 			throw error;
 		}
 		debugVerbose(response);
 
-		// When a command has arguments they are sent as a second message
-		if (args?.length) {
-			// if (response !== 'ok') throw new Error(response);
+		// Command control arguments are sent as a second message
+		if (isControlCommand(commandOptions)) {
+			const { controlCommands } = commandOptions;
 
-			const argsJoined = args.join(',');
-			debug(`Send args: ${argsJoined.slice(0, 30)}`);
+			const argsSerialized = JSON.stringify({ command: controlCommands });
+			debug(`Send args: ${argsSerialized.slice(0, 30)}`);
 
-			// Send args
-			const argCommandId = this.#getCommandId();
 			try {
-				response = await this.#sendReceive(argCommandId, argsJoined);
+				response = await this.#sendReceive(argsSerialized);
 			} catch (error) {
 				this.#busy = false;
 				throw error;
 			}
+			debugVerbose(response);
+		}
 
+		// Arguments are sent as a second message
+		if (hasArguments(commandOptions)) {
+			const { args } = commandOptions;
+
+			const argsSerialized = args.join(',');
+			debug(`Send args: ${argsSerialized.slice(0, 30)}`);
+
+			try {
+				response = await this.#sendReceive(argsSerialized);
+			} catch (error) {
+				this.#busy = false;
+				throw error;
+			}
 			debugVerbose(response);
 		}
 
 		// Data is sent in another subsequent message
-		if (data) {
+		if (hasData(commandOptions)) {
+			const { data } = commandOptions;
 			debug(`Send data: ${data.slice(0, 30)}`);
 
 			if (command !== Command.DataTransmitRequest) {
 				throw new Error(`sending data not supported for command ${command}`);
 			}
 
-			// if (response !== 'ok') throw new Error(response);
-
-			const dataCommandId = this.#getCommandId();
 			try {
-				response = await this.#sendReceive(dataCommandId, data);
+				response = await this.#sendReceive(data);
 			} catch (error) {
 				this.#busy = false;
 				throw error;
 			}
-
 			debugVerbose(response);
 		}
 
@@ -234,48 +243,30 @@ export class BaseDevice {
 
 	/**
 	 * Queue a command to be sent when previous commands are finished, optionally with arguments and return response data (if any)
-	 * @param {Command} command - a command string like CHCK
-	 * @param  {CommandOptions} options
-	 * @param  {String[]} options.args - any arguments for the command
-	 * @param  {String} options.data - any (stringified) data to transmit (only valid for data transmit commands)
+	 * @param  {CommandOptions} commandOptions - command and options
 	 * @returns
 	 */
 
+	// TODO: union overloads for the correct commands
 	// Overload without response data
-	async queueCommand(
-		command: Command,
-		options?: CommandOptions | undefined,
-	): Promise<string>;
+	async queueCommand(commandOptions: CommandOptions): Promise<string>;
 
 	// Overload with response data
 	async queueCommand<ResponseData extends Record<string, unknown>>(
-		command: Command,
-		options?: CommandOptions | undefined,
+		commandOptions: CommandOptions,
 	): Promise<ResponseData>;
 
 	queueCommand<ResponseData extends Record<string, unknown>>(
-		command: Command,
-		options: CommandOptions = {},
+		commandOptions: CommandOptions,
 	): Promise<string | ResponseData> {
 		const debug = createDebug('pmu:queueCommand');
-
-		const allowRetry = !(
-			command === Command.Control &&
-			options.args &&
-			[
-				'bankUp',
-				'bankDown',
-				'toggleFootswitch',
-				'deviceRestart',
-				'enterBootloader',
-				'factoryReset',
-			].includes(options.args[0])
-		);
+		const { command } = commandOptions;
+		const allowRetry = command !== Command.Control; // Most are not idempotent
 
 		return this.#queue.enqueue(async () => {
 			// The API has issues with rapid-fire commands, a single retry appears to be enough to be reliable
 			try {
-				const response = await this.runCommand(command, options); // DO NOT "simplify" this, we need to await in try
+				const response = await this.runCommand(commandOptions); // DO NOT "simplify" this, we need to await in try
 				return response;
 			} catch (error) {
 				if (
@@ -284,8 +275,8 @@ export class BaseDevice {
 					error.includes('timed out')
 				) {
 					debug('Command timed out, retrying');
-					await this.runCommand(Command.Reset);
-					return this.runCommand(command, options);
+					await this.runCommand({ command: Command.Reset });
+					return this.runCommand(commandOptions);
 				}
 				throw error;
 			}

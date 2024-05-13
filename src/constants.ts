@@ -1,0 +1,1 @@
+export const SMART_MESSAGE_STATUS_BYTE = 112;
