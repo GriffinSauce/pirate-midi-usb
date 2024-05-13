@@ -1,5 +1,11 @@
 import semver from 'semver';
-import { BankSettings, Command, DeviceInfo, GlobalSettings } from './types';
+import {
+	BankSettings,
+	Command,
+	CtrlCommand,
+	DeviceInfo,
+	GlobalSettings,
+} from './types';
 import { BaseDevice } from './BaseDevice';
 import { deviceDescriptors } from './data/deviceDescriptors';
 import { ValidationError } from './ValidationError';
@@ -72,14 +78,15 @@ export class PirateMidiDevice extends EventEmitter {
 	 * @returns {DeviceInfo} - device information like the model and firmware version
 	 */
 	async updateDeviceInfo(): Promise<DeviceInfo> {
-		this.deviceInfo = await this.baseDevice.queueCommand<DeviceInfo>(
-			Command.Check,
-		);
+		this.deviceInfo = await this.baseDevice.queueCommand<DeviceInfo>({
+			command: Command.Check,
+		});
 		return this.deviceInfo;
 	}
 
 	getGlobalSettings(): Promise<GlobalSettings> {
-		return this.baseDevice.queueCommand<GlobalSettings>(Command.DataRequest, {
+		return this.baseDevice.queueCommand<GlobalSettings>({
+			command: Command.DataRequest,
 			args: ['globalSettings'],
 		});
 	}
@@ -87,24 +94,27 @@ export class PirateMidiDevice extends EventEmitter {
 	getBankSettings(bank: number): Promise<BankSettings> {
 		this.validateBankNumber(bank);
 
-		return this.baseDevice.queueCommand<BankSettings>(Command.DataRequest, {
+		return this.baseDevice.queueCommand<BankSettings>({
+			command: Command.DataRequest,
 			args: ['bankSettings', String(bank)],
 		});
 	}
 
+	// TODO: this doesn't adhere to the same structure, also .. who needs it really?
 	/**
 	 * @param profileId - 32-bit hex configuration profile ID
 	 */
-	setProfileId(profileId: string): Promise<string> {
-		if (!profileId) {
-			throw new ValidationError('Value is required for profileId');
-		}
+	// setProfileId(profileId: string): Promise<string> {
+	// 	if (!profileId) {
+	// 		throw new ValidationError('Value is required for profileId');
+	// 	}
 
-		// TODO: validate input
-		return this.baseDevice.queueCommand(Command.DataTransmitRequest, {
-			args: ['profileId', profileId],
-		});
-	}
+	// 	// TODO: validate input
+	// 	return this.baseDevice.queueCommand({
+	// 		command: Command.DataTransmitRequest,
+	// 		args: ['profileId', profileId],
+	// 	});
+	// }
 
 	setGlobalSettings(globalSettings: Partial<GlobalSettings>): Promise<string> {
 		if (!globalSettings) {
@@ -112,7 +122,8 @@ export class PirateMidiDevice extends EventEmitter {
 		}
 
 		// TODO: validate input
-		return this.baseDevice.queueCommand(Command.DataTransmitRequest, {
+		return this.baseDevice.queueCommand({
+			command: Command.DataTransmitRequest,
 			args: ['globalSettings'],
 			data: JSON.stringify(globalSettings),
 		});
@@ -141,7 +152,8 @@ export class PirateMidiDevice extends EventEmitter {
 				footswitches.map((footswitch, index) => {
 					const data = Array(6).fill({});
 					data[index] = footswitch;
-					return this.baseDevice.queueCommand(Command.DataTransmitRequest, {
+					return this.baseDevice.queueCommand({
+						command: Command.DataTransmitRequest,
 						args: ['bankSettings', String(bank)],
 						data: JSON.stringify({
 							footswitches: data,
@@ -151,62 +163,53 @@ export class PirateMidiDevice extends EventEmitter {
 			);
 		}
 
-		return this.baseDevice.queueCommand(Command.DataTransmitRequest, {
+		return this.baseDevice.queueCommand({
+			command: Command.DataTransmitRequest,
 			args: ['bankSettings', String(bank)],
 			data: JSON.stringify(rest),
 		});
 	}
 
-	bankUp(): Promise<string> {
-		return this.baseDevice.queueCommand(Command.Control, {
-			args: [{ command: ['bankUp'] }],
+	/** Send multiple commands, see CtrlCommand */
+	control(controlCommands: CtrlCommand[]): Promise<string> {
+		return this.baseDevice.queueCommand({
+			command: Command.Control,
+			controlCommands,
 		});
 	}
 
+	bankUp(): Promise<string> {
+		return this.control(['bankUp']);
+	}
+
 	bankDown(): Promise<string> {
-		return this.baseDevice.queueCommand(Command.Control, {
-			args: [{ command: ['bankDown'] }],
-		});
+		return this.control(['bankDown']);
 	}
 
 	goToBank(bank: number): Promise<string> {
 		this.validateBankNumber(bank);
-
-		return this.baseDevice.queueCommand(Command.Control, {
-			args: [{ command: [{ goToBank: bank }] }],
-		});
+		return this.control([{ goToBank: bank }]);
 	}
 
 	toggleFootswitch(footswitch: number): Promise<string> {
 		this.validateFootswitchNumber(footswitch);
-
-		return this.baseDevice.queueCommand(Command.Control, {
-			args: [{ command: [{ toggleFootswitch: footswitch }] }],
-		});
+		return this.control([{ toggleFootswitch: footswitch }]);
 	}
 
 	refreshLeds(): Promise<string> {
-		return this.baseDevice.queueCommand(Command.Control, {
-			args: [{ command: ['refreshLeds'] }],
-		});
+		return this.control(['refreshLeds']);
 	}
 
 	refreshDisplay(): Promise<string> {
-		return this.baseDevice.queueCommand(Command.Control, {
-			args: [{ command: ['refreshDisplay'] }],
-		});
+		return this.control(['refreshDisplay']);
 	}
 
 	deviceRestart(): Promise<string> {
-		return this.baseDevice.queueCommand(Command.Control, {
-			args: [{ command: ['deviceRestart'] }],
-		});
+		return this.control(['deviceRestart']);
 	}
 
 	enterBootloader(): Promise<string> {
-		return this.baseDevice.queueCommand(Command.Control, {
-			args: [{ command: ['enterBootloader'] }],
-		});
+		return this.control(['enterBootloader']);
 	}
 
 	// Named prop should prevent any accidental fires
@@ -217,13 +220,11 @@ export class PirateMidiDevice extends EventEmitter {
 			);
 		}
 
-		return this.baseDevice.queueCommand(Command.Control, {
-			args: [{ command: ['factoryReset'] }],
-		});
+		return this.control(['factoryReset']);
 	}
 
 	reset(): Promise<string> {
-		return this.baseDevice.queueCommand(Command.Reset);
+		return this.baseDevice.queueCommand({ command: Command.Reset });
 	}
 
 	disconnect(): Promise<void> {

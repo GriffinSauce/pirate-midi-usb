@@ -110,20 +110,21 @@ describe('PirateMidiDevice', () => {
 			});
 		});
 
-		describe('setProfileId', () => {
-			it('should resolve', async () => {
-				await expect(device.setProfileId('0')).resolves.not.toThrow();
-			});
+		// Function disabled for now
+		// describe('setProfileId', () => {
+		// 	it('should resolve', async () => {
+		// 		await expect(device.setProfileId('0')).resolves.not.toThrow();
+		// 	});
 
-			it('should send/receive the right messages', async () => {
-				await device.setProfileId('0');
+		// 	it('should send/receive the right messages', async () => {
+		// 		await device.setProfileId('0');
 
-				expect(port.sentMessages).toHaveLength(2);
-				expect(port.sentMessages[0]).toMatch(/\d,DTXR~/);
-				expect(port.sentMessages[1]).toMatch(/\d,profileId,0~/);
-				expect(port.receivedMessages.length).toEqual(2);
-			});
-		});
+		// 		expect(port.sentMessages).toHaveLength(2);
+		// 		expect(port.sentMessages[0]).toMatch(/\d,DTXR~/);
+		// 		expect(port.sentMessages[1]).toMatch(/\d,profileId,0~/);
+		// 		expect(port.receivedMessages.length).toEqual(2);
+		// 	});
+		// });
 
 		describe('setGlobalSettings', () => {
 			it('should resolve', async () => {

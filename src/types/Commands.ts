@@ -6,19 +6,49 @@ export enum Command {
 	Reset = 'RSET',
 }
 
-type CtrlCommand =
+export type CtrlCommand =
+	| { toggleFootswitch: number }
+	| { goToBank: number }
 	| 'bankUp'
 	| 'bankDown'
-	| { goToBank: number }
-	| { toggleFootswitch: number }
 	| 'refreshLeds'
 	| 'refreshDisplay'
 	| 'deviceRestart'
 	| 'enterBootloader'
 	| 'factoryReset';
 
-// TODO: we can probably unwrap `command` into a CommandOptions property
-type CtrlArgs = { command: CtrlCommand[] };
+export type CommandOptionsCheck = {
+	command: Command.Check;
+};
 
-// TODO: this is hella clunky, should be a union of different commands and their data/arguments
-export type CommandOptions = { args?: string[] | [CtrlArgs]; data?: string };
+export type CommandOptionsControl = {
+	command: Command.Control;
+	controlCommands: CtrlCommand[]; // yo dawg
+};
+
+export type CommandOptionsDataRequest = {
+	command: Command.DataRequest;
+	args: string[];
+};
+
+export type CommandOptionsDataTransmit = {
+	command: Command.DataTransmitRequest;
+	args: string[];
+	data: string;
+};
+
+export type CommandOptionsDataReset = {
+	command: Command.Reset;
+};
+
+/** Convenience type */
+export type CommandOptionsWithArgs =
+	| CommandOptionsDataRequest
+	| CommandOptionsDataTransmit;
+
+export type CommandOptions =
+	| CommandOptionsCheck
+	| CommandOptionsControl
+	| CommandOptionsDataRequest
+	| CommandOptionsDataTransmit
+	| CommandOptionsDataReset;
