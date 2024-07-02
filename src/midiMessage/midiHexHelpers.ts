@@ -36,7 +36,7 @@ const notes = [
 export function convertTypeAndChannelToStatusByte(
 	type: string,
 	channel: number,
-): string {
+): number {
 	if (!isMidiMessageType(type)) {
 		throw new Error(`type "${type}" is not valid`);
 	}
@@ -46,96 +46,40 @@ export function convertTypeAndChannelToStatusByte(
 
 	const statusByte = firstHex + secondHex;
 
-	return statusByte;
+	return parseInt(statusByte, 16);
 }
 
-export function convertStatusByteToType(statusByte: string): MidiMessageType {
-	const firstHex: string = statusByte[0].toLowerCase();
-	const type = types[typeByteValues.indexOf(firstHex)];
-
-	return type;
+export function convertStatusByteToType(statusByte: number): MidiMessageType {
+	const firstHex = statusByte.toString(16).padStart(2, '0')[0];
+	return types[typeByteValues.indexOf(firstHex)];
 }
 
-export function convertStatusByteToChannel(statusByte: string): number {
-	const secondHex: string = statusByte[1];
-	const channel: number = parseInt(secondHex, 16) + 1;
-
-	return channel;
-}
-
-export function convertDataByteToNumber(dataByte: string): number {
-	const number: number = parseInt(dataByte, 16);
-
-	return number;
-}
-
-export function convertNumberToDataByte(value: number): string {
-	let dataByte: string = value.toString(16);
-	if (dataByte.length === 1) {
-		dataByte = `0${dataByte}`;
-	}
-
-	return dataByte;
+export function convertStatusByteToChannel(statusByte: number): number {
+	const secondHex: string = statusByte.toString(16).padStart(2, '0')[1];
+	return parseInt(secondHex, 16) + 1;
 }
 
 export function convertOctaveAndNoteToDataByte(
 	octave: number,
 	note: string,
-): string {
-	const dataByte: string = ((octave + 1) * 12 + notes.indexOf(note)).toString(
-		16,
-	);
-
-	return dataByte;
+): number {
+	return 12 * (octave + 2) + notes.indexOf(note);
 }
 
-export function convertDataByteToOctave(dataByte: string): number {
-	const octave: number = Math.floor(parseInt(dataByte, 16) / 12 - 1);
-
-	return octave;
+export function convertDataByteToOctave(dataByte: number): number {
+	return Math.floor(dataByte / 12 - 2);
 }
 
-export function convertDataByteToNote(dataByte: string): string {
-	const note: string = notes[parseInt(dataByte, 16) % 12];
-
-	return note;
+export function convertDataByteToNote(dataByte: number): string {
+	return notes[dataByte % 12];
 }
 
-export function convertPitchToDataByte1(pitch: number): string {
-	const maxPitchInt: number = parseInt('1FFF', 16);
-	let signBit: string;
-
-	if (pitch < 0) {
-		signBit = '0';
-	} else {
-		signBit = '1';
-	}
-
-	const dataByte1Bin = (
-		signBit +
-		Math.round((Math.abs(pitch) / 100) * maxPitchInt)
-			.toString(2)
-			.padStart(13, '0')
-	).substring(7);
-
-	const dataByte1 = parseInt(dataByte1Bin, 2).toString(16);
-
-	return dataByte1;
+export function convertPitchToDataByte1(pitch: number): number {
+	return 127 & convertPitchToDataBytes(pitch);
 }
 
-export function convertPitchToDataByte2(pitch: number): string {
-	const maxPitchInt: number = parseInt('1FFF', 16);
-	const signBit = pitch < 0 ? '0' : '1';
-	const dataByte2Bin = (
-		signBit +
-		Math.round((Math.abs(pitch) / 100) * maxPitchInt)
-			.toString(2)
-			.padStart(13, '0')
-	).substring(0, 7);
-
-	const dataByte2: string = parseInt(dataByte2Bin, 2).toString(16);
-
-	return dataByte2;
+export function convertPitchToDataByte2(pitch: number): number {
+	return (convertPitchToDataBytes(pitch) >> 7) & 127;
 }
 
 /**
@@ -143,29 +87,19 @@ export function convertPitchToDataByte2(pitch: number): string {
  * The idea is that output is used on a slider.
  */
 export function convertDataBytesToPitch(
-	dataByte1: string,
-	dataByte2: string,
+	dataByte1: number,
+	dataByte2: number,
 ): number {
-	const dataByte1Bin: string = hexToSevenBit(dataByte1);
-	const dataByte2Bin: string = hexToSevenBit(dataByte2);
-
-	const totalPitchBinWithSign: string = dataByte2Bin.concat(dataByte1Bin);
-	const totalPitchBinWithoutSign: string = totalPitchBinWithSign.substring(1);
-
-	const totalPitchInt: number = parseInt(totalPitchBinWithoutSign, 2);
-	const maxPitchInt: number = parseInt('1FFF', 16);
-
-	const signBit: string = totalPitchBinWithSign.charAt(0);
-
-	let pitch: number = Math.round((totalPitchInt / maxPitchInt) * 100);
-
-	if (signBit === '0') {
-		pitch = pitch * -1;
-	}
-
-	return pitch;
+	// Bitshift magic copied from editor :thumbsup:
+	let Y = (dataByte2 << 7) | dataByte1;
+	const re = (dataByte2 >> 6) & 1;
+	Y &= -8193;
+	let J = Math.round((Y / 8191) * 100);
+	return 0 === re ? -J : J;
 }
 
-function hexToSevenBit(hex: string): string {
-	return parseInt(hex, 16).toString(2).padStart(7, '0');
+function convertPitchToDataBytes(pitch: number): number {
+	// Bitshift magic copied from editor :thumbsup:
+	const B = parseInt('1FFF', 16);
+	return ((pitch < 0 ? 0 : 1) << 13) | Math.round((Math.abs(pitch) / 100) * B);
 }

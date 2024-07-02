@@ -58,7 +58,6 @@ export const createDevice = ({
 			...defaultInitialState,
 			...initialState,
 		},
-		lastMessageId: undefined,
 		command: undefined,
 		args: undefined,
 		data: undefined,
@@ -140,10 +139,9 @@ export const createDevice = ({
 	const deviceMachine = createMachine(definition);
 
 	const send = (rawMessage: string): void => {
-		const { id, data } = parseMessage(rawMessage);
+		const data = parseMessage(rawMessage);
 		const event = {
 			type: data,
-			id,
 		};
 
 		// Transition to new state
@@ -151,18 +149,18 @@ export const createDevice = ({
 
 		const {
 			value,
-			context: { response, lastMessageId },
+			context: { response },
 		} = deviceMachine.state;
 
 		// Return response
 		const responseStates = new Set(['AwaitingArgs', 'AwaitingData', 'Final']);
 		if (response && responseStates.has(value)) {
-			onResponse?.(`${lastMessageId!},${response}~`);
+			onResponse?.(`${response}~`);
 		}
 
 		// Manually restart
 		if (value === 'Final') {
-			deviceMachine.dispatch({ type: 'restart', id: 0 });
+			deviceMachine.dispatch({ type: 'restart' });
 		}
 	};
 
