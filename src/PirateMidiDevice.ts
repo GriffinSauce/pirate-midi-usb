@@ -14,7 +14,7 @@ import { WebSerialPort } from './serial/WebSerialPort';
 import { EventEmitter } from 'events';
 import { DevicePortMock } from './mock/DevicePortMock';
 
-export const MINIMUM_FIRMWARE_VERSION = '1.1.3';
+export const MINIMUM_FIRMWARE_VERSION = '2.0.0';
 
 export class PirateMidiDevice extends EventEmitter {
 	deviceInfo?: DeviceInfo;
