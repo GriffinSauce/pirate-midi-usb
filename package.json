@@ -33,7 +33,7 @@
     "examples:backup": "wds --watch --supervise examples/backup.ts",
     "examples:restore": "wds --watch --supervise examples/restore.ts",
     "examples:browser": "cd examples/browser && npm run dev",
-    "build": " npx rollup -c",
+    "build": "npx rollup -c",
     "clean": "rm -rf ./lib/",
     "cm": "cz",
     "coverage": "codecov",
