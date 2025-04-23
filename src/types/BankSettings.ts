@@ -1,4 +1,4 @@
-import { RawExpMessage, RawMessage } from './RawMessage';
+import { RawExpMessage, RawMessage, RawSmartMessage } from './RawMessage';
 import { AuxMessages, MessageStack } from './MessageStack';
 
 // Extend Record to help infer the runCommand type
@@ -67,7 +67,7 @@ interface Step {
 	numMessages: number;
 	label: string;
 	color: number;
-	messages: RawMessage[];
+	messages: Array<RawMessage | RawSmartMessage>;
 }
 
 interface SequentialMessages {
@@ -79,5 +79,5 @@ interface ScrollingMessages {
 	minScrollLimit: number; // 0-126
 	maxScrollLimit: number; // 1-127
 	numMessages: number;
-	messages: RawMessage[];
+	messages: Array<RawMessage | RawSmartMessage>;
 }
