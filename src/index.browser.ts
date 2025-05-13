@@ -1,4 +1,8 @@
-import { MINIMUM_FIRMWARE_VERSION, PirateMidiDevice } from './PirateMidiDevice';
+import {
+	MINIMUM_CLICK_FIRMWARE_VERSION,
+	MINIMUM_BRIDGE_FIRMWARE_VERSION,
+	PirateMidiDevice,
+} from './PirateMidiDevice';
 import { WebSerialPort } from './serial/WebSerialPort';
 import { GetDevices } from './types';
 
@@ -26,9 +30,16 @@ export const getDevices: GetDevices = async () => {
 	await device.updateDeviceInfo();
 
 	if (!device.getIsSupported()) {
-		throw new Error(
-			`Minimum firmware version ${MINIMUM_FIRMWARE_VERSION} is required`,
-		);
+		if (device.family === 'Bridge') {
+			throw new Error(
+				`Minimum firmware version ${MINIMUM_BRIDGE_FIRMWARE_VERSION} is required`,
+			);
+		}
+		if (device.family === 'CLiCK') {
+			throw new Error(
+				`Minimum firmware version ${MINIMUM_CLICK_FIRMWARE_VERSION} is required`,
+			);
+		}
 	}
 
 	return [device];
