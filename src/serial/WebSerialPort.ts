@@ -4,7 +4,7 @@ import { EventEmitter } from 'events';
 /**
  * Device vendor id, use to filter USB devices
  */
-const USB_VENDOR_ID = 1155;
+const USB_VENDOR_IDS = [1155, 12346];
 
 /**
  * Maintain web serial port for device
@@ -22,7 +22,7 @@ export class WebSerialPort extends EventEmitter {
 		try {
 			// Prompt user to select any serial port.
 			this.port = await navigator.serial.requestPort({
-				filters: [{ usbVendorId: USB_VENDOR_ID }],
+				filters: USB_VENDOR_IDS.map((id) => ({ usbVendorId: id })),
 			});
 			await this.#open();
 		} catch (error) {
@@ -42,7 +42,7 @@ export class WebSerialPort extends EventEmitter {
 
 		this.isOpening = true;
 		try {
-			await this.port!.open({ baudRate: 9600 });
+			await this.port!.open({ baudRate: 115200 });
 
 			this.#createWriter();
 			void this.#listenToPort();
@@ -147,8 +147,8 @@ export class WebSerialPort extends EventEmitter {
 			return;
 		}
 
-		const port = ports.find(
-			(port) => port.getInfo().usbVendorId === USB_VENDOR_ID,
+		const port = ports.find((port) =>
+			USB_VENDOR_IDS.includes(port.getInfo().usbVendorId ?? 0),
 		);
 
 		if (!port) {
