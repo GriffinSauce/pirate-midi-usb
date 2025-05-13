@@ -17,7 +17,7 @@ import { DevicePortMock } from './mock/DevicePortMock';
 import type { CLiCKGlobalSettings } from './types/CLiCKGlobalSettings';
 import type { CLiCKPresetSettings } from './types/CLiCKPresetSettings';
 
-export const BRIDGE_FAMILY_DEVICES = ['Bridge6', 'Bridge4', 'Bridge1', 'Aero'];
+export const BRIDGE_FAMILY_DEVICES = ['Bridge6', 'Bridge4', 'Aero'];
 export const CLICK_FAMILY_DEVICES = ['CLiCK'];
 
 export const MINIMUM_BRIDGE_FIRMWARE_VERSION = '2.0.0';
