@@ -8,7 +8,8 @@ import {
 	type BridgeBankSettings,
 } from './types';
 import { BaseDevice } from './BaseDevice';
-import { deviceDescriptors } from './data/deviceDescriptors';
+import { bridgeDescriptors } from './data/bridgeDescriptors';
+import { clickDescriptors } from './data/clickDescriptors';
 import { ValidationError } from './ValidationError';
 import { NodeSerialPort } from './serial/NodeSerialPort';
 import { WebSerialPort } from './serial/WebSerialPort';
@@ -42,14 +43,20 @@ export class PirateMidiDevice extends EventEmitter {
 		});
 	}
 
-	// TODO: Public descriptor needs to be updated to include CLiCK
 	getDeviceDescription() {
 		if (!this.deviceInfo) {
 			throw new Error('No device info available');
 		}
-		return deviceDescriptors[
-			this.deviceInfo.deviceModel as keyof typeof deviceDescriptors
-		];
+		if (this.family === 'Bridge') {
+			return bridgeDescriptors[
+				this.deviceInfo.deviceModel as keyof typeof bridgeDescriptors
+			];
+		}
+		if (this.family === 'CLiCK') {
+			return clickDescriptors[
+				this.deviceInfo.deviceModel as keyof typeof clickDescriptors
+			];
+		}
 	}
 
 	getIsSupported(): boolean {
@@ -72,7 +79,13 @@ export class PirateMidiDevice extends EventEmitter {
 	}
 
 	validateBankNumber(bank: number): void {
-		const { numberBanks } = this.getDeviceDescription();
+		if (this.family !== 'Bridge') {
+			throw new ValidationError(
+				'Bank number validation is not supported for this device family',
+			);
+		}
+		const { numberBanks } =
+			this.getDeviceDescription() as typeof bridgeDescriptors[keyof typeof bridgeDescriptors];
 		if (typeof bank !== 'number') {
 			throw new ValidationError('Not a valid bank number');
 		}
@@ -81,10 +94,27 @@ export class PirateMidiDevice extends EventEmitter {
 		}
 	}
 
+	validatePresetNumber(preset: number): void {
+		if (this.family !== 'CLiCK') {
+			throw new ValidationError(
+				'Preset number validation is not supported for this device family',
+			);
+		}
+		const { numberPresets } =
+			this.getDeviceDescription() as typeof clickDescriptors[keyof typeof clickDescriptors];
+		if (typeof preset !== 'number') {
+			throw new ValidationError('Not a valid preset number');
+		}
+		if (preset < 0 || preset > numberPresets) {
+			throw new ValidationError('Preset number out of range');
+		}
+	}
+
 	validateFootswitchNumber(footswitch: number): void {
 		const {
 			hardware: { footswitches },
-		} = this.getDeviceDescription();
+		} =
+			this.getDeviceDescription() as typeof bridgeDescriptors[keyof typeof bridgeDescriptors];
 		if (typeof footswitch !== 'number') {
 			throw new ValidationError('Not a valid footswitch number');
 		}
@@ -136,9 +166,7 @@ export class PirateMidiDevice extends EventEmitter {
 	}
 
 	getPresetSettings(preset: number): Promise<CLiCKPresetSettings> {
-		if (preset < 0 || preset > 127) {
-			throw new ValidationError('Preset number out of range');
-		}
+		this.validatePresetNumber(preset);
 
 		return this.baseDevice.queueCommand<CLiCKPresetSettings>({
 			command: Command.DataRequest,
