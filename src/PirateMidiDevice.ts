@@ -1,10 +1,11 @@
 import semver from 'semver';
 import {
-	BankSettings,
 	Command,
 	CtrlCommand,
-	DeviceInfo,
-	GlobalSettings,
+	BridgeDeviceInfo,
+	CLiCKDeviceInfo,
+	BridgeGlobalSettings,
+	type BridgeBankSettings,
 } from './types';
 import { BaseDevice } from './BaseDevice';
 import { deviceDescriptors } from './data/deviceDescriptors';
@@ -13,11 +14,18 @@ import { NodeSerialPort } from './serial/NodeSerialPort';
 import { WebSerialPort } from './serial/WebSerialPort';
 import { EventEmitter } from 'events';
 import { DevicePortMock } from './mock/DevicePortMock';
+import type { CLiCKGlobalSettings } from './types/CLiCKGlobalSettings';
+import type { CLiCKPresetSettings } from './types/CLiCKPresetSettings';
 
-export const MINIMUM_FIRMWARE_VERSION = '2.0.0';
+export const BRIDGE_FAMILY_DEVICES = ['Bridge6', 'Bridge4', 'Bridge1', 'Aero'];
+export const CLICK_FAMILY_DEVICES = ['CLiCK'];
+
+export const MINIMUM_BRIDGE_FIRMWARE_VERSION = '2.0.0';
+export const MINIMUM_CLICK_FIRMWARE_VERSION = '2.0.0-';
 
 export class PirateMidiDevice extends EventEmitter {
-	deviceInfo?: DeviceInfo;
+	deviceInfo?: BridgeDeviceInfo | CLiCKDeviceInfo;
+	family?: 'Bridge' | 'CLiCK';
 	baseDevice: BaseDevice;
 
 	constructor(port: NodeSerialPort | WebSerialPort | DevicePortMock) {
@@ -34,21 +42,33 @@ export class PirateMidiDevice extends EventEmitter {
 		});
 	}
 
+	// TODO: Public descriptor needs to be updated to include CLiCK
 	getDeviceDescription() {
 		if (!this.deviceInfo) {
 			throw new Error('No device info available');
 		}
-		return deviceDescriptors[this.deviceInfo.deviceModel];
+		return deviceDescriptors[
+			this.deviceInfo.deviceModel as keyof typeof deviceDescriptors
+		];
 	}
 
 	getIsSupported(): boolean {
 		if (!this.deviceInfo) {
 			throw new Error('No device info available');
 		}
-		return semver.gte(
-			this.deviceInfo.firmwareVersion,
-			MINIMUM_FIRMWARE_VERSION,
-		);
+		if (this.family === 'Bridge') {
+			return semver.gte(
+				this.deviceInfo.firmwareVersion,
+				MINIMUM_BRIDGE_FIRMWARE_VERSION,
+			);
+		}
+		if (this.family === 'CLiCK') {
+			return semver.gte(
+				this.deviceInfo.firmwareVersion,
+				MINIMUM_CLICK_FIRMWARE_VERSION,
+			);
+		}
+		return false;
 	}
 
 	validateBankNumber(bank: number): void {
@@ -75,28 +95,55 @@ export class PirateMidiDevice extends EventEmitter {
 
 	/**
 	 * Retrieve device information from the device, save it on the instance AND return it.
-	 * @returns {DeviceInfo} - device information like the model and firmware version
+	 * @returns {BridgeDeviceInfo | ClickDeviceInfo} - device information like the model and firmware version
 	 */
-	async updateDeviceInfo(): Promise<DeviceInfo> {
-		this.deviceInfo = await this.baseDevice.queueCommand<DeviceInfo>({
+	async updateDeviceInfo(): Promise<BridgeDeviceInfo | CLiCKDeviceInfo> {
+		this.deviceInfo = await this.baseDevice.queueCommand<
+			BridgeDeviceInfo | CLiCKDeviceInfo
+		>({
 			command: Command.Check,
 		});
+
+		this.family = BRIDGE_FAMILY_DEVICES.includes(this.deviceInfo.deviceModel)
+			? 'Bridge'
+			: CLICK_FAMILY_DEVICES.includes(this.deviceInfo.deviceModel)
+			? 'CLiCK'
+			: undefined;
+
+		if (!this.family) {
+			throw new Error('Unknown/Unsupported device family');
+		}
+
 		return this.deviceInfo;
 	}
 
-	getGlobalSettings(): Promise<GlobalSettings> {
-		return this.baseDevice.queueCommand<GlobalSettings>({
+	getGlobalSettings(): Promise<BridgeGlobalSettings | CLiCKGlobalSettings> {
+		return this.baseDevice.queueCommand<
+			BridgeGlobalSettings | CLiCKGlobalSettings
+		>({
 			command: Command.DataRequest,
 			args: ['globalSettings'],
 		});
 	}
 
-	getBankSettings(bank: number): Promise<BankSettings> {
+	getBankSettings(bank: number): Promise<BridgeBankSettings> {
 		this.validateBankNumber(bank);
 
-		return this.baseDevice.queueCommand<BankSettings>({
+		return this.baseDevice.queueCommand<BridgeBankSettings>({
 			command: Command.DataRequest,
 			args: ['bankSettings', String(bank)],
+		});
+	}
+
+	getPresetSettings(preset: number): Promise<CLiCKPresetSettings> {
+		if (preset < 0 || preset > 127) {
+			throw new ValidationError('Preset number out of range');
+		}
+
+		return this.baseDevice.queueCommand<CLiCKPresetSettings>({
+			command: Command.DataRequest,
+			// NOTE: This is not a typo, CLiCK uses the bankSettings command to retrieve presets
+			args: ['bankSettings', String(preset)],
 		});
 	}
 
@@ -116,7 +163,9 @@ export class PirateMidiDevice extends EventEmitter {
 	// 	});
 	// }
 
-	setGlobalSettings(globalSettings: Partial<GlobalSettings>): Promise<string> {
+	setGlobalSettings(
+		globalSettings: Partial<BridgeGlobalSettings | CLiCKGlobalSettings>,
+	): Promise<string> {
 		if (!globalSettings) {
 			throw new ValidationError('Value is required for globalSettings');
 		}
@@ -131,7 +180,7 @@ export class PirateMidiDevice extends EventEmitter {
 
 	async setBankSettings(
 		bank: number,
-		bankSettings: Partial<BankSettings>,
+		bankSettings: Partial<BridgeBankSettings>,
 	): Promise<string> {
 		this.validateBankNumber(bank);
 
@@ -170,6 +219,27 @@ export class PirateMidiDevice extends EventEmitter {
 		});
 	}
 
+	setPresetSettings(
+		preset: number,
+		presetSettings: Partial<CLiCKPresetSettings>,
+	): Promise<string> {
+		if (preset < 0 || preset > 127) {
+			throw new ValidationError('Preset number out of range');
+		}
+
+		if (!presetSettings) {
+			throw new ValidationError('Value is required for presetSettings');
+		}
+
+		// TODO: validate data input
+
+		return this.baseDevice.queueCommand({
+			command: Command.DataTransmitRequest,
+			args: ['bankSettings', String(preset)],
+			data: JSON.stringify(presetSettings),
+		});
+	}
+
 	/** Send multiple commands, see CtrlCommand */
 	control(controlCommands: CtrlCommand[]): Promise<string> {
 		return this.baseDevice.queueCommand({
@@ -189,6 +259,22 @@ export class PirateMidiDevice extends EventEmitter {
 	goToBank(bank: number): Promise<string> {
 		this.validateBankNumber(bank);
 		return this.control([{ goToBank: bank }]);
+	}
+
+	// NOTE: CLiCK uses the bankUp/bankDown/goToBank commands to navigate presets
+	presetUp(): Promise<string> {
+		return this.control(['bankUp']);
+	}
+
+	presetDown(): Promise<string> {
+		return this.control(['bankDown']);
+	}
+
+	goToPreset(preset: number): Promise<string> {
+		if (preset < 0 || preset > 127) {
+			throw new ValidationError('Preset number out of range');
+		}
+		return this.control([{ goToBank: preset }]);
 	}
 
 	toggleFootswitch(footswitch: number): Promise<string> {
