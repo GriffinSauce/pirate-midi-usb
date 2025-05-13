@@ -1,9 +1,13 @@
 // Extend Record to help infer the runCommand type
-export interface DeviceInfo extends Record<string, unknown> {
-	deviceModel: 'Bridge6' | 'Bridge4' | 'Bridge1';
+export interface CLiCKDeviceInfo extends Record<string, unknown> {
+	deviceModel: 'CLiCK';
 	firmwareVersion: string;
 	hardwareVersion: string;
 	uId: string;
 	deviceName: string;
 	profileId: string;
+	rssi: number;
+	ssid: string;
+	ip: string;
+	macAddress: string;
 }
