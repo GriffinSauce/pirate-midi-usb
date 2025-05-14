@@ -18,8 +18,8 @@ import { DevicePortMock } from './mock/DevicePortMock';
 import type { CLiCKGlobalSettings } from './types/CLiCKGlobalSettings';
 import type { CLiCKPresetSettings } from './types/CLiCKPresetSettings';
 
-export const BRIDGE_FAMILY_DEVICES = ['Bridge6', 'Bridge4', 'Aero'];
-export const CLICK_FAMILY_DEVICES = ['CLiCK'];
+export const BRIDGE_FAMILY_DEVICES = ['Bridge6', 'Bridge4', 'Aero'] as const;
+export const CLICK_FAMILY_DEVICES = ['CLiCK'] as const;
 
 export const MINIMUM_BRIDGE_FIRMWARE_VERSION = '2.0.0';
 export const MINIMUM_CLICK_FIRMWARE_VERSION = '2.0.0-beta.7';
@@ -134,9 +134,13 @@ export class PirateMidiDevice extends EventEmitter {
 			command: Command.Check,
 		});
 
-		this.family = BRIDGE_FAMILY_DEVICES.includes(this.deviceInfo.deviceModel)
+		this.family = (BRIDGE_FAMILY_DEVICES as ReadonlyArray<string>).includes(
+			this.deviceInfo.deviceModel,
+		)
 			? 'Bridge'
-			: CLICK_FAMILY_DEVICES.includes(this.deviceInfo.deviceModel)
+			: (CLICK_FAMILY_DEVICES as ReadonlyArray<string>).includes(
+					this.deviceInfo.deviceModel,
+			  )
 			? 'CLiCK'
 			: undefined;
 
