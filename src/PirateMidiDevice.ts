@@ -22,7 +22,7 @@ export const BRIDGE_FAMILY_DEVICES = ['Bridge6', 'Bridge4', 'Aero'];
 export const CLICK_FAMILY_DEVICES = ['CLiCK'];
 
 export const MINIMUM_BRIDGE_FIRMWARE_VERSION = '2.0.0';
-export const MINIMUM_CLICK_FIRMWARE_VERSION = '2.0.0-';
+export const MINIMUM_CLICK_FIRMWARE_VERSION = '2.0.0-beta.7';
 
 export class PirateMidiDevice extends EventEmitter {
 	deviceInfo?: BridgeDeviceInfo | CLiCKDeviceInfo;
