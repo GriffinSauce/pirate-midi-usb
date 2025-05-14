@@ -43,7 +43,7 @@ export interface Device {
 
 const defaultInitialState: DeviceState = {
 	deviceInfo: {
-		deviceName: 'Bridge 6',
+		deviceName: 'Bridge6',
 	} as BridgeDeviceInfo | CLiCKDeviceInfo,
 	globalSettings: {
 		currentBank: 0,
