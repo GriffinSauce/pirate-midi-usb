@@ -1,5 +1,5 @@
 // Extend Record to help infer the runCommand type
-export interface CLiCKGlobalSettings extends Record<string, unknown> {
+export interface ClickGlobalSettings extends Record<string, unknown> {
 	deviceName: string;
 	currentBank: number;
 	ledBrightness: number;

@@ -2,9 +2,9 @@ import type {
 	BridgeBankSettings,
 	BridgeDeviceInfo,
 	BridgeGlobalSettings,
-	CLiCKDeviceInfo,
-	CLiCKGlobalSettings,
-	CLiCKPresetSettings,
+	ClickDeviceInfo,
+	ClickGlobalSettings,
+	ClickPresetSettings,
 } from '../types';
 import { Command } from '../types';
 import { parseMessage } from '../utils/parseMessage';
@@ -26,9 +26,9 @@ import {
 } from './actions';
 
 export interface DeviceState {
-	deviceInfo: BridgeDeviceInfo | CLiCKDeviceInfo;
-	globalSettings: BridgeGlobalSettings | CLiCKGlobalSettings;
-	banks: BridgeBankSettings[] | CLiCKPresetSettings[];
+	deviceInfo: BridgeDeviceInfo | ClickDeviceInfo;
+	globalSettings: BridgeGlobalSettings | ClickGlobalSettings;
+	banks: BridgeBankSettings[] | ClickPresetSettings[];
 }
 
 interface Options {
@@ -44,10 +44,10 @@ export interface Device {
 const defaultInitialState: DeviceState = {
 	deviceInfo: {
 		deviceName: 'Bridge6',
-	} as BridgeDeviceInfo | CLiCKDeviceInfo,
+	} as BridgeDeviceInfo | ClickDeviceInfo,
 	globalSettings: {
 		currentBank: 0,
-	} as BridgeGlobalSettings | CLiCKGlobalSettings,
+	} as BridgeGlobalSettings | ClickGlobalSettings,
 	banks: [],
 };
 

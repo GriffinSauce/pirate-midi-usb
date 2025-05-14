@@ -3,7 +3,7 @@ import {
 	Command,
 	CtrlCommand,
 	BridgeDeviceInfo,
-	CLiCKDeviceInfo,
+	ClickDeviceInfo,
 	BridgeGlobalSettings,
 	type BridgeBankSettings,
 } from './types';
@@ -15,8 +15,8 @@ import { NodeSerialPort } from './serial/NodeSerialPort';
 import { WebSerialPort } from './serial/WebSerialPort';
 import { EventEmitter } from 'events';
 import { DevicePortMock } from './mock/DevicePortMock';
-import type { CLiCKGlobalSettings } from './types/CLiCKGlobalSettings';
-import type { CLiCKPresetSettings } from './types/CLiCKPresetSettings';
+import type { ClickGlobalSettings } from './types/ClickGlobalSettings';
+import type { ClickPresetSettings } from './types/ClickPresetSettings';
 
 export const BRIDGE_FAMILY_DEVICES = ['Bridge6', 'Bridge4', 'Aero'] as const;
 export const CLICK_FAMILY_DEVICES = ['CLiCK'] as const;
@@ -25,8 +25,8 @@ export const MINIMUM_BRIDGE_FIRMWARE_VERSION = '2.0.0';
 export const MINIMUM_CLICK_FIRMWARE_VERSION = '2.0.0-beta.7';
 
 export class PirateMidiDevice extends EventEmitter {
-	deviceInfo?: BridgeDeviceInfo | CLiCKDeviceInfo;
-	family?: 'Bridge' | 'CLiCK';
+	deviceInfo?: BridgeDeviceInfo | ClickDeviceInfo;
+	family?: 'Bridge' | 'Click';
 	baseDevice: BaseDevice;
 
 	constructor(port: NodeSerialPort | WebSerialPort | DevicePortMock) {
@@ -52,7 +52,7 @@ export class PirateMidiDevice extends EventEmitter {
 				this.deviceInfo.deviceModel as keyof typeof bridgeDescriptors
 			];
 		}
-		if (this.family === 'CLiCK') {
+		if (this.family === 'Click') {
 			return clickDescriptors[
 				this.deviceInfo.deviceModel as keyof typeof clickDescriptors
 			];
@@ -69,7 +69,7 @@ export class PirateMidiDevice extends EventEmitter {
 				MINIMUM_BRIDGE_FIRMWARE_VERSION,
 			);
 		}
-		if (this.family === 'CLiCK') {
+		if (this.family === 'Click') {
 			return semver.gte(
 				this.deviceInfo.firmwareVersion,
 				MINIMUM_CLICK_FIRMWARE_VERSION,
@@ -95,7 +95,7 @@ export class PirateMidiDevice extends EventEmitter {
 	}
 
 	validatePresetNumber(preset: number): void {
-		if (this.family !== 'CLiCK') {
+		if (this.family !== 'Click') {
 			throw new ValidationError(
 				'Preset number validation is not supported for this device family',
 			);
@@ -127,9 +127,9 @@ export class PirateMidiDevice extends EventEmitter {
 	 * Retrieve device information from the device, save it on the instance AND return it.
 	 * @returns {BridgeDeviceInfo | ClickDeviceInfo} - device information like the model and firmware version
 	 */
-	async updateDeviceInfo(): Promise<BridgeDeviceInfo | CLiCKDeviceInfo> {
+	async updateDeviceInfo(): Promise<BridgeDeviceInfo | ClickDeviceInfo> {
 		this.deviceInfo = await this.baseDevice.queueCommand<
-			BridgeDeviceInfo | CLiCKDeviceInfo
+			BridgeDeviceInfo | ClickDeviceInfo
 		>({
 			command: Command.Check,
 		});
@@ -141,7 +141,7 @@ export class PirateMidiDevice extends EventEmitter {
 			: (CLICK_FAMILY_DEVICES as ReadonlyArray<string>).includes(
 					this.deviceInfo.deviceModel,
 			  )
-			? 'CLiCK'
+			? 'Click'
 			: undefined;
 
 		if (!this.family) {
@@ -151,9 +151,9 @@ export class PirateMidiDevice extends EventEmitter {
 		return this.deviceInfo;
 	}
 
-	getGlobalSettings(): Promise<BridgeGlobalSettings | CLiCKGlobalSettings> {
+	getGlobalSettings(): Promise<BridgeGlobalSettings | ClickGlobalSettings> {
 		return this.baseDevice.queueCommand<
-			BridgeGlobalSettings | CLiCKGlobalSettings
+			BridgeGlobalSettings | ClickGlobalSettings
 		>({
 			command: Command.DataRequest,
 			args: ['globalSettings'],
@@ -169,12 +169,12 @@ export class PirateMidiDevice extends EventEmitter {
 		});
 	}
 
-	getPresetSettings(preset: number): Promise<CLiCKPresetSettings> {
+	getPresetSettings(preset: number): Promise<ClickPresetSettings> {
 		this.validatePresetNumber(preset);
 
-		return this.baseDevice.queueCommand<CLiCKPresetSettings>({
+		return this.baseDevice.queueCommand<ClickPresetSettings>({
 			command: Command.DataRequest,
-			// NOTE: This is not a typo, CLiCK uses the bankSettings command to retrieve presets
+			// NOTE: This is not a typo, Click uses the bankSettings command to retrieve presets
 			args: ['bankSettings', String(preset)],
 		});
 	}
@@ -196,7 +196,7 @@ export class PirateMidiDevice extends EventEmitter {
 	// }
 
 	setGlobalSettings(
-		globalSettings: Partial<BridgeGlobalSettings | CLiCKGlobalSettings>,
+		globalSettings: Partial<BridgeGlobalSettings | ClickGlobalSettings>,
 	): Promise<string> {
 		if (!globalSettings) {
 			throw new ValidationError('Value is required for globalSettings');
@@ -253,7 +253,7 @@ export class PirateMidiDevice extends EventEmitter {
 
 	setPresetSettings(
 		preset: number,
-		presetSettings: Partial<CLiCKPresetSettings>,
+		presetSettings: Partial<ClickPresetSettings>,
 	): Promise<string> {
 		if (preset < 0 || preset > 127) {
 			throw new ValidationError('Preset number out of range');
@@ -293,7 +293,7 @@ export class PirateMidiDevice extends EventEmitter {
 		return this.control([{ goToBank: bank }]);
 	}
 
-	// NOTE: CLiCK uses the bankUp/bankDown/goToBank commands to navigate presets
+	// NOTE: Click uses the bankUp/bankDown/goToBank commands to navigate presets
 	presetUp(): Promise<string> {
 		return this.control(['bankUp']);
 	}

@@ -3,15 +3,15 @@ import type {
 	BridgeDeviceInfo,
 	BridgeGlobalSettings,
 	Command,
-	CLiCKDeviceInfo,
-	CLiCKGlobalSettings,
-	CLiCKPresetSettings,
+	ClickDeviceInfo,
+	ClickGlobalSettings,
+	ClickPresetSettings,
 } from '../types';
 
 export interface DeviceState {
-	deviceInfo: BridgeDeviceInfo | CLiCKDeviceInfo;
-	globalSettings: BridgeGlobalSettings | CLiCKGlobalSettings;
-	banks: BridgeBankSettings[] | CLiCKPresetSettings[];
+	deviceInfo: BridgeDeviceInfo | ClickDeviceInfo;
+	globalSettings: BridgeGlobalSettings | ClickGlobalSettings;
+	banks: BridgeBankSettings[] | ClickPresetSettings[];
 }
 
 type Event = { type: Command } | { type: string }; // Could be narrowed to accepted args

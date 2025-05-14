@@ -35,7 +35,7 @@ export const getDevices: GetDevices = async () => {
 				`Minimum firmware version ${MINIMUM_BRIDGE_FIRMWARE_VERSION} is required`,
 			);
 		}
-		if (device.family === 'CLiCK') {
+		if (device.family === 'Click') {
 			throw new Error(
 				`Minimum firmware version ${MINIMUM_CLICK_FIRMWARE_VERSION} is required`,
 			);

@@ -1,5 +1,5 @@
 // Extend Record to help infer the runCommand type
-export interface CLiCKDeviceInfo extends Record<string, unknown> {
+export interface ClickDeviceInfo extends Record<string, unknown> {
 	deviceModel: 'CLiCK';
 	firmwareVersion: string;
 	hardwareVersion: string;

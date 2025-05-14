@@ -15,10 +15,10 @@ export * from './BridgeDeviceInfo';
 export * from './BridgeGlobalSettings';
 export * from './BridgeBankSettings';
 
-// CLiCK
-export * from './CLiCKDeviceInfo';
-export * from './CLiCKGlobalSettings';
-export * from './CLiCKPresetSettings';
+// Click
+export * from './ClickDeviceInfo';
+export * from './ClickGlobalSettings';
+export * from './ClickPresetSettings';
 
 /**
  * Default export
