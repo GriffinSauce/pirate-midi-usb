@@ -4,7 +4,7 @@
     "module": "commonjs",
     "declaration": true,
     "declarationDir": ".",
-    "rootDir": "./src",
+    "rootDir": ".",
     "outDir": "./lib/",
     "strict": true,
     "esModuleInterop": true,
@@ -20,9 +20,16 @@
       "./types"
     ],
     "paths": {
-      "*" : ["./types/*"]
+      "*": [
+        "./types/*"
+      ]
     }
   },
-  "include": ["src/**/*.ts", "scripts/**/*.ts"],
-  "exclude": ["lib"]
+  "include": [
+    "src/**/*.ts",
+    "scripts/**/*.ts"
+  ],
+  "exclude": [
+    "lib"
+  ]
 }
