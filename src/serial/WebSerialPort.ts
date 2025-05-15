@@ -4,7 +4,7 @@ import { EventEmitter } from 'events';
 /**
  * Device vendor id, use to filter USB devices
  */
-const USB_VENDOR_IDS = [1155, 12346];
+const USB_VENDOR_IDS = [1155, 12346] as const;
 
 /**
  * Maintain web serial port for device
@@ -148,7 +148,7 @@ export class WebSerialPort extends EventEmitter {
 		}
 
 		const port = ports.find((port) =>
-			USB_VENDOR_IDS.includes(port.getInfo().usbVendorId ?? 0),
+			USB_VENDOR_IDS.includes(port.getInfo().usbVendorId),
 		);
 
 		if (!port) {
