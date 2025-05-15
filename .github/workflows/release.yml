@@ -4,6 +4,7 @@ on:
     branches:
       - main
       - next
+      - click-support
 jobs:
   release:
     name: Release

@@ -119,7 +119,11 @@
   "release": {
     "branches": [
       "main",
-      "next"
+      "next",
+      {
+        "name": "click-support",
+        "prerelease": true
+      }
     ]
   }
 }
