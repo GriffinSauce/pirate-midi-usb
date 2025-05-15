@@ -147,9 +147,13 @@ export class WebSerialPort extends EventEmitter {
 			return;
 		}
 
-		const port = ports.find((port) =>
-			USB_VENDOR_IDS.includes(port.getInfo().usbVendorId),
-		);
+		const port = ports.find((port) => {
+			const vendorId = port.getInfo().usbVendorId;
+			return (
+				vendorId !== undefined &&
+				(USB_VENDOR_IDS as ReadonlyArray<number>).includes(vendorId)
+			);
+		});
 
 		if (!port) {
 			return;
