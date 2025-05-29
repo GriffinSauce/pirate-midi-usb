@@ -29,8 +29,19 @@ export class PirateMidiDevice extends EventEmitter {
 	family?: 'Bridge' | 'Click';
 	baseDevice: BaseDevice;
 
+	portType: 'node' | 'web' | 'mock';
+	port: NodeSerialPort | WebSerialPort | DevicePortMock;
+
 	constructor(port: NodeSerialPort | WebSerialPort | DevicePortMock) {
 		super();
+
+		this.portType =
+			port instanceof NodeSerialPort
+				? 'node'
+				: port instanceof WebSerialPort
+				? 'web'
+				: 'mock';
+		this.port = port;
 
 		this.baseDevice = new BaseDevice(port);
 
