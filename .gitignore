@@ -125,4 +125,5 @@ build
 .env
 
 # compiled code
-src/data/deviceDescriptors.ts
+src/data/bridgeDescriptors.ts
+src/data/clickDescriptors.ts

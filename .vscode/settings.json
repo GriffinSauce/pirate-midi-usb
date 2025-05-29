@@ -15,5 +15,6 @@
     "Colours",
     "Flexi",
     "omni"
-  ]
+  ],
+  "typescript.tsdk": "node_modules/typescript/lib"
 }

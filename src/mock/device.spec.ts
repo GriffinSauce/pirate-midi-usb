@@ -25,7 +25,7 @@ describe('deviceMachine', () => {
 	describe('CHCK', () => {
 		it('should return deviceInfo immediately', (done) => {
 			const device = createDevice({
-				onResponse: assertResponses(['{"deviceName":"Bridge 6"}~'], done),
+				onResponse: assertResponses(['{"deviceName":"Bridge6"}~'], done),
 			});
 
 			device.send('CHCK~');

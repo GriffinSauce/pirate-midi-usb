@@ -1,4 +1,8 @@
-import { MINIMUM_FIRMWARE_VERSION, PirateMidiDevice } from './PirateMidiDevice';
+import {
+	MINIMUM_CLICK_FIRMWARE_VERSION,
+	MINIMUM_BRIDGE_FIRMWARE_VERSION,
+	PirateMidiDevice,
+} from './PirateMidiDevice';
 import { WebSerialPort } from './serial/WebSerialPort';
 import { GetDevices } from './types';
 
@@ -7,6 +11,8 @@ export { PirateMidiDevice } from './PirateMidiDevice';
 export { ValidationError } from './ValidationError';
 export * from './midiMessage';
 export { getMockDevice } from './mock';
+
+export type { WebSerialPort } from './serial/WebSerialPort';
 
 /**
  * Requests access to a Pirate Midi device and return an instance with device info set
@@ -26,9 +32,16 @@ export const getDevices: GetDevices = async () => {
 	await device.updateDeviceInfo();
 
 	if (!device.getIsSupported()) {
-		throw new Error(
-			`Minimum firmware version ${MINIMUM_FIRMWARE_VERSION} is required`,
-		);
+		if (device.family === 'Bridge') {
+			throw new Error(
+				`Minimum firmware version ${MINIMUM_BRIDGE_FIRMWARE_VERSION} is required`,
+			);
+		}
+		if (device.family === 'Click') {
+			throw new Error(
+				`Minimum firmware version ${MINIMUM_CLICK_FIRMWARE_VERSION} is required`,
+			);
+		}
 	}
 
 	return [device];

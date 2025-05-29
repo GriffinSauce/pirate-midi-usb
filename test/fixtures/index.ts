@@ -1,11 +1,11 @@
 import {
-	BankSettings,
-	DeviceInfo,
+	BridgeDeviceInfo,
+	BridgeGlobalSettings,
+	BridgeBankSettings,
 	Footswitch,
-	GlobalSettings,
 } from '../../src/types';
 
-export const deviceInfo: DeviceInfo = {
+export const deviceInfo: BridgeDeviceInfo = {
 	deviceModel: 'Bridge6',
 	firmwareVersion: '1.1.0',
 	hardwareVersion: '1.0.1',
@@ -14,7 +14,7 @@ export const deviceInfo: DeviceInfo = {
 	profileId: '0',
 };
 
-export const globalSettings: GlobalSettings = {
+export const globalSettings: BridgeGlobalSettings = {
 	currentBank: 0,
 	midiChannel: 0,
 	ledBrightness: 46,
@@ -188,7 +188,7 @@ const footSwitch: Footswitch = {
 	},
 };
 
-export const bankSettings: BankSettings = {
+export const bankSettings: BridgeBankSettings = {
 	bankName: 'Bank 0',
 	bankId: 0,
 	midiClocks: [{ tempo: 0 }, { tempo: 0 }],

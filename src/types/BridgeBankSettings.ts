@@ -2,7 +2,7 @@ import { RawExpMessage, RawMessage, RawSmartMessage } from './RawMessage';
 import { AuxMessages, MessageStack } from './MessageStack';
 
 // Extend Record to help infer the runCommand type
-export interface BankSettings extends Record<string, unknown> {
+export interface BridgeBankSettings extends Record<string, unknown> {
 	bankName: string;
 	bankId: number; // 32-bit
 	bankMessages: MessageStack;

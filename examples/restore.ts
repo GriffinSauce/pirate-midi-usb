@@ -2,7 +2,7 @@ import path from 'path';
 import fs from 'fs';
 import { getDevices } from '../src';
 import { renderProgressBar } from './utils/progressBar';
-import { BankSettings, GlobalSettings } from '../src/types';
+import { BridgeBankSettings, BridgeGlobalSettings } from '../src/types';
 
 /**
  * Restores a backup from file to the device
@@ -40,12 +40,15 @@ void (async () => {
 		throw new Error('Unexpected format - bankSettings is missing');
 	}
 
-	await device.setGlobalSettings(backup.globalSettings as GlobalSettings);
+	await device.setGlobalSettings(backup.globalSettings as BridgeGlobalSettings);
 
 	const { numberBanks } = device.getDeviceDescription();
 
 	for (let i = 0; i < numberBanks; i++) {
-		await device.setBankSettings(i, (backup.bankSettings as BankSettings[])[i]);
+		await device.setBankSettings(
+			i,
+			(backup.bankSettings as BridgeBankSettings[])[i],
+		);
 		renderProgressBar(i, numberBanks);
 	}
 
