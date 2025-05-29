@@ -11,8 +11,8 @@ import { BaseDevice } from './BaseDevice';
 import { bridgeDescriptors } from './data/bridgeDescriptors';
 import { clickDescriptors } from './data/clickDescriptors';
 import { ValidationError } from './ValidationError';
-import { NodeSerialPort } from './serial/NodeSerialPort';
-import { WebSerialPort } from './serial/WebSerialPort';
+import type { NodeSerialPort } from './serial/NodeSerialPort';
+import type { WebSerialPort } from './serial/WebSerialPort';
 import { EventEmitter } from 'events';
 import { DevicePortMock } from './mock/DevicePortMock';
 import type { ClickGlobalSettings } from './types/ClickGlobalSettings';
@@ -36,9 +36,9 @@ export class PirateMidiDevice extends EventEmitter {
 		super();
 
 		this.portType =
-			port instanceof NodeSerialPort
+			port.constructor.name === 'NodeSerialPort'
 				? 'node'
-				: port instanceof WebSerialPort
+				: port.constructor.name === 'WebSerialPort'
 				? 'web'
 				: 'mock';
 		this.port = port;
