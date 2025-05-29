@@ -13,6 +13,8 @@ export * from './midiMessage';
 export * from './utils/colorHelpers';
 export { getMockDevice } from './mock';
 
+export type { NodeSerialPort } from './serial/NodeSerialPort';
+
 /**
  * Get any available Pirate Midi devices with device info set
  */
