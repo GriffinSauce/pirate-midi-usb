@@ -50,12 +50,12 @@ export class BaseDevice {
 	 */
 	#busy = false;
 
-	#port: PortImplementation;
+	port: PortImplementation;
 
 	#queue: Queue;
 
 	constructor(port: PortImplementation) {
-		this.#port = port;
+		this.port = port;
 		this.#queue = new Queue();
 	}
 
@@ -71,13 +71,13 @@ export class BaseDevice {
 		return new Promise((_resolve, _reject) => {
 			const timeout = setTimeout(() => {
 				debug(`Timeout executing "${formattedCommand}"`);
-				this.#port.off('data', handleResponse);
+				this.port.off('data', handleResponse);
 				_reject('command timed out');
 			}, TIMEOUT_MS);
 
 			const cleanup = () => {
 				clearTimeout(timeout);
-				this.#port.off('data', handleResponse);
+				this.port.off('data', handleResponse);
 			};
 
 			// Wrap resolve with cleanup
@@ -106,10 +106,10 @@ export class BaseDevice {
 				}
 			};
 
-			this.#port.on('data', handleResponse);
+			this.port.on('data', handleResponse);
 
 			debug('out', formattedCommand);
-			void this.#port.write(formattedCommand as string & Buffer);
+			void this.port.write(formattedCommand as string & Buffer);
 		});
 	}
 
@@ -284,6 +284,6 @@ export class BaseDevice {
 	}
 
 	disconnect(): Promise<void> {
-		return this.#port.close();
+		return this.port.close();
 	}
 }

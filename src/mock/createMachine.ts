@@ -1,9 +1,17 @@
-import { BankSettings, Command, DeviceInfo, GlobalSettings } from '../types';
+import type {
+	BridgeBankSettings,
+	BridgeDeviceInfo,
+	BridgeGlobalSettings,
+	Command,
+	ClickDeviceInfo,
+	ClickGlobalSettings,
+	ClickPresetSettings,
+} from '../types';
 
 export interface DeviceState {
-	deviceInfo: DeviceInfo;
-	globalSettings: GlobalSettings;
-	banks: BankSettings[];
+	deviceInfo: BridgeDeviceInfo | ClickDeviceInfo;
+	globalSettings: BridgeGlobalSettings | ClickGlobalSettings;
+	banks: BridgeBankSettings[] | ClickPresetSettings[];
 }
 
 type Event = { type: Command } | { type: string }; // Could be narrowed to accepted args

@@ -3,7 +3,7 @@ import { RawExpMessage } from './RawMessage';
 import { MessageStack, AuxMessages } from './MessageStack';
 
 // Extend Record to help infer the runCommand type
-export interface GlobalSettings extends Record<string, unknown> {
+export interface BridgeGlobalSettings extends Record<string, unknown> {
 	currentBank: number;
 	midiChannel: MidiChannel;
 	uiMode: 'simple' | 'extended';
@@ -58,7 +58,7 @@ interface BankPcMidiOutputChannels {
 	usb: MidiChannel;
 }
 
-// TODO: doument that these are the actual combo's but all props are maintained for better UX
+// TODO: document that these are the actual combo's but all props are maintained for better UX
 // type FlexiPortConfig =
 // 	| {
 // 			mode:
@@ -79,6 +79,7 @@ interface BankPcMidiOutputChannels {
 // 			mode: 'tapTempo' | 'pulseOut';
 // 			clock: null | 0 | 1;
 // 	  };
+
 type FlexiPortConfig = {
 	mode:
 		| 'unassigned'

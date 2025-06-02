@@ -2,6 +2,8 @@ import { createDevice, Device, DeviceState } from './device';
 import { EventEmitter } from 'events';
 
 export class DevicePortMock extends EventEmitter {
+	type = 'mock' as const;
+
 	/**
 	 * The emulated hardware device
 	 */

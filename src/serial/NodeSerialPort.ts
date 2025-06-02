@@ -16,6 +16,8 @@ const MANUFACTURER = 'Pirate MIDI';
  * Maintain node serial port for device
  */
 export class NodeSerialPort extends EventEmitter {
+	type = 'node' as const;
+
 	// Serial port for sending/receiving data
 	#port: SerialPort;
 
@@ -40,7 +42,7 @@ export class NodeSerialPort extends EventEmitter {
 				.map((portInfo) => {
 					const port = new SerialPort({
 						path: portInfo.path,
-						baudRate: 9600,
+						baudRate: 115200,
 						autoOpen: false,
 					});
 					return new NodeSerialPort(port);

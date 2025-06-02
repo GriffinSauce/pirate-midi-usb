@@ -1,11 +1,11 @@
 import path from 'path';
 import fs from 'fs';
-import { getDevices } from '../src';
+import { getDevices, type BridgeBankSettings } from '../src';
 import { renderProgressBar } from './utils/progressBar';
 
 /**
  * Writes a full backup of the device to file
- * NOTE: this is an example script, it's advised to use the official backup/restore tools
+ * NOTE: this is an example script for Bridge family devices, it's advised to use the official backup/restore tools
  */
 void (async () => {
 	// Get all connected PM devices
@@ -28,7 +28,7 @@ void (async () => {
 
 	// Use a loop to iterate through banks because we need to run commands sequentially and wait for each to finish
 	// Promise.all cannot be used here for this reason.
-	const bankSettings = [];
+	const bankSettings: BridgeBankSettings[] = [];
 	for (let i = 0; i < numberBanks; i++) {
 		bankSettings.push(await device.getBankSettings(i));
 		renderProgressBar(i, numberBanks);
