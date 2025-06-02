@@ -10,6 +10,8 @@ const USB_VENDOR_IDS = [1155, 12346] as const;
  * Maintain web serial port for device
  */
 export class WebSerialPort extends EventEmitter {
+	type = 'web' as const;
+
 	port?: SerialPort;
 	isOpening = false;
 	isOpen = false;
